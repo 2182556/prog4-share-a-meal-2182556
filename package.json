@@ -1,0 +1,23 @@
+{
+  "name": "prog4-share-a-meal-2182556",
+  "version": "0.0.1",
+  "description": "Programmeren 4 SAM server",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/2182556/prog4-share-a-meal-2182556.git"
+  },
+  "author": "Joy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/2182556/prog4-share-a-meal-2182556/issues"
+  },
+  "homepage": "https://gitlab.com/2182556/prog4-share-a-meal-2182556#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
