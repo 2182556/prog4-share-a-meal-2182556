@@ -42,7 +42,7 @@ unittests:
   script:
     - echo 'Testing not implemented yet!'
   only:
-    - master
+    - main
 
 #
 # Run end-to-end tests
@@ -80,7 +80,7 @@ production:
     - gem install dpl
     - dpl --provider=heroku --app=$HEROKU_APP_NAME --api-key=$HEROKU_API_KEY
   only:
-    - master
+    - main
 
 #
 # Example: Deploy to Google Firebase, as an alternative to Heroku
