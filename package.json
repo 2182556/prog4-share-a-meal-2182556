@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/2182556/prog4-share-a-meal-2182556.git"
+    "url": "git+https://github.com/2182556/prog4-share-a-meal-2182556.git"
   },
   "author": "Joy",
   "license": "ISC",
   "bugs": {
-    "url": "https://gitlab.com/2182556/prog4-share-a-meal-2182556/issues"
+    "url": "https://github.com/2182556/prog4-share-a-meal-2182556/issues"
   },
-  "homepage": "https://gitlab.com/2182556/prog4-share-a-meal-2182556#readme",
+  "homepage": "https://github.com/2182556/prog4-share-a-meal-2182556#readme",
   "devDependencies": {
     "nodemon": "^2.0.15"
   },
