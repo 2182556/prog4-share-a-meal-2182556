@@ -3,6 +3,7 @@ let userDatabase = [];
 let id = 0;
 
 let controller = {
+  //npm joi api for better error handling
   validateUser: (req, res, next) => {
     let user = req.body;
     let { firstName, lastName, emailAdress, password } = user;
@@ -12,11 +13,11 @@ let controller = {
       assert(typeof lastName === "string", "Last name must be a string");
       next();
     } catch (err) {
-      console.log(err);
-      res.status(400).json({
+      const error = {
         status: 400,
-        result: err.toString(),
-      });
+        result: err.message,
+      };
+      next(error);
     }
   },
   addUser: (req, res) => {
@@ -62,7 +63,7 @@ let controller = {
       result: "This feature has not been implemented yet.",
     });
   },
-  getUserById: (req, res) => {
+  getUserById: (req, res, next) => {
     const userId = req.params.userId;
     let userArray = userDatabase.filter((item) => item.id == userId);
     if (userArray.length > 0) {
@@ -72,10 +73,11 @@ let controller = {
         result: userArray,
       });
     } else {
-      res.status(404).json({
+      const error = {
         status: 404,
         result: `User with id ${userId} not found`,
-      });
+      };
+      next(error);
     }
   },
   updateUser: (req, res) => {
