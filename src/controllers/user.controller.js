@@ -52,8 +52,8 @@ let controller = {
     }
   },
   getAllUsers: (req, res) => {
-    res.status(201).json({
-      status: 201,
+    res.status(200).json({
+      status: 200,
       result: userDatabase,
     });
   },
@@ -68,8 +68,8 @@ let controller = {
     let userArray = userDatabase.filter((item) => item.id == userId);
     if (userArray.length > 0) {
       console.log(userArray);
-      res.status(201).json({
-        status: 201,
+      res.status(200).json({
+        status: 200,
         result: userArray,
       });
     } else {
