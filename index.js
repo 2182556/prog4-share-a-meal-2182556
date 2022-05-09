@@ -1,6 +1,8 @@
 const express = require("express");
+// const database = require('./database/inmemdb')
 const app = express();
-const port = process.env.PORT || 3000;
+require("dotenv").config();
+const port = process.env.PORT;
 const bodyParser = require("body-parser");
 const userRouter = require("./src/routes/user.routes");
 
@@ -20,6 +22,7 @@ app.get("/", (req, res) => {
 });
 
 app.use(userRouter);
+// app.use('/api',userRouter) //can remove api from routes
 
 app.all("*", (req, res) => {
   res.status(404).json({

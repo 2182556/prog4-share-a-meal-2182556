@@ -1,8 +1,10 @@
+const database = require("../../database/inmemdb");
+const dbconnection = require("../../database/dbconnection");
 const assert = require("assert");
 let userDatabase = [];
 let id = 0;
 
-let controller = {
+module.exports = {
   //npm joi api for better error handling
   validateUser: (req, res, next) => {
     let user = req.body;
@@ -51,10 +53,25 @@ let controller = {
       }
     }
   },
-  getAllUsers: (req, res) => {
-    res.status(200).json({
-      status: 200,
-      result: userDatabase,
+  getAllUsers: (req, res, next) => {
+    dbconnection.getConnection(function (err, connection) {
+      if (err) throw err;
+
+      connection.query("SELECT * FROM user", function (error, results, fields) {
+        connection.release();
+
+        if (error) throw error;
+
+        console.log("results = ", results.length);
+        res.status(200).json({
+          statusCode: 200,
+          results: results,
+        });
+
+        // dbconnection.end((err) => {
+        //   console.log("Pool was closed.");
+        // });
+      });
     });
   },
   getUserProfile: (req, res) => {
@@ -138,5 +155,3 @@ let controller = {
     }
   },
 };
-
-module.exports = controller;
