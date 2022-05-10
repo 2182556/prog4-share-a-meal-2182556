@@ -13,6 +13,7 @@ module.exports = {
       assert(typeof emailAdress === "string", "Email must be a string"); //=== checkt value and type, == only value
       assert(typeof firstName === "string", "First name must be a string");
       assert(typeof lastName === "string", "Last name must be a string");
+      assert(typeof password === "string", "Password must be a string");
       next();
     } catch (err) {
       const error = {
@@ -54,24 +55,28 @@ module.exports = {
     }
   },
   getAllUsers: (req, res, next) => {
+    console.log("getAllUsers called");
     dbconnection.getConnection(function (err, connection) {
       if (err) throw err;
 
-      connection.query("SELECT * FROM user", function (error, results, fields) {
-        connection.release();
+      connection.query(
+        "SELECT * FROM user;",
+        function (error, results, fields) {
+          connection.release();
 
-        if (error) throw error;
+          if (error) throw error;
 
-        console.log("results = ", results.length);
-        res.status(200).json({
-          statusCode: 200,
-          results: results,
-        });
+          console.log("results = ", results.length);
+          res.status(200).json({
+            statusCode: 200,
+            results: results,
+          });
 
-        // dbconnection.end((err) => {
-        //   console.log("Pool was closed.");
-        // });
-      });
+          // dbconnection.end((err) => {
+          //   console.log("Pool was closed.");
+          // });
+        }
+      );
     });
   },
   getUserProfile: (req, res) => {
