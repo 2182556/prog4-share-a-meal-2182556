@@ -1,7 +1,7 @@
-const database = require("../../database/inmemdb");
-const dbconnection = require("../../database/dbconnection");
-const assert = require("assert");
-const Joi = require("joi");
+const database = require('../../database/inmemdb');
+const dbconnection = require('../../database/dbconnection');
+const assert = require('assert');
+const Joi = require('joi');
 let userDatabase = [];
 let id = 0;
 
@@ -13,12 +13,9 @@ module.exports = {
       firstName: Joi.string().required(),
       lastName: Joi.string().required(),
       password: Joi.string().required(),
-      emailAdress: Joi.string()
-        .required()
-        .email({
-          minDomainSegments: 2,
-          tlds: { allow: ["com", "net"] },
-        }),
+      emailAdress: Joi.string().required().email({
+        minDomainSegments: 2,
+      }),
     });
 
     // let { firstName, lastName, emailAdress, password } = user;
@@ -67,18 +64,18 @@ module.exports = {
     }
   },
   getAllUsers: (req, res, next) => {
-    console.log("getAllUsers called");
+    console.log('getAllUsers called');
     dbconnection.getConnection(function (err, connection) {
       if (err) throw err;
 
       connection.query(
-        "SELECT * FROM user;",
+        'SELECT * FROM user;',
         function (error, results, fields) {
           connection.release();
 
           if (error) throw error;
 
-          console.log("results = ", results.length);
+          console.log('results = ', results.length);
           res.status(200).json({
             statusCode: 200,
             results: results,
@@ -94,11 +91,11 @@ module.exports = {
   getUserProfile: (req, res) => {
     res.status(503).json({
       status: 503,
-      result: "This feature has not been implemented yet.",
+      result: 'This feature has not been implemented yet.',
     });
   },
   getUserById: (req, res, next) => {
-    console.log("getUserById called");
+    console.log('getUserById called');
     const userId = req.params.userId;
     dbconnection.getConnection(function (err, connection) {
       if (err) throw err;
@@ -110,7 +107,7 @@ module.exports = {
 
           if (error) throw error;
 
-          console.log("results = ", results.length);
+          console.log('results = ', results.length);
           if (results.length > 0) {
             console.log(userArray);
             res.status(200).json({
