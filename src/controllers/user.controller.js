@@ -1,6 +1,7 @@
 const database = require("../../database/inmemdb");
 const dbconnection = require("../../database/dbconnection");
 const assert = require("assert");
+const Joi = require("joi");
 let userDatabase = [];
 let id = 0;
 
@@ -8,19 +9,30 @@ module.exports = {
   //npm joi api for better error handling
   validateUser: (req, res, next) => {
     let user = req.body;
-    let { firstName, lastName, emailAdress, password } = user;
-    try {
-      assert(typeof emailAdress === "string", "Email must be a string"); //=== checkt value and type, == only value
-      assert(typeof firstName === "string", "First name must be a string");
-      assert(typeof lastName === "string", "Last name must be a string");
-      assert(typeof password === "string", "Password must be a string");
+    const schema = Joi.object({
+      firstName: Joi.string().required(),
+      lastName: Joi.string().required(),
+      password: Joi.string().required(),
+      emailAdress: Joi.string()
+        .required()
+        .email({
+          minDomainSegments: 2,
+          tlds: { allow: ["com", "net"] },
+        }),
+    });
+
+    // let { firstName, lastName, emailAdress, password } = user;
+
+    const { error, value } = schema.validate(req.body);
+    if (error == undefined) {
       next();
-    } catch (err) {
-      const error = {
+    } else {
+      console.log(error.message);
+      const err = {
         status: 400,
-        result: err.message,
+        result: error.message,
       };
-      next(error);
+      next(err);
     }
   },
   addUser: (req, res) => {
@@ -86,21 +98,39 @@ module.exports = {
     });
   },
   getUserById: (req, res, next) => {
+    console.log("getUserById called");
     const userId = req.params.userId;
-    let userArray = userDatabase.filter((item) => item.id == userId);
-    if (userArray.length > 0) {
-      console.log(userArray);
-      res.status(200).json({
-        status: 200,
-        result: userArray,
-      });
-    } else {
-      const error = {
-        status: 404,
-        result: `User with id ${userId} not found`,
-      };
-      next(error);
-    }
+    dbconnection.getConnection(function (err, connection) {
+      if (err) throw err;
+
+      connection.query(
+        `SELECT * FROM user WHERE id=${userId};`,
+        function (error, results, fields) {
+          connection.release();
+
+          if (error) throw error;
+
+          console.log("results = ", results.length);
+          if (results.length > 0) {
+            console.log(userArray);
+            res.status(200).json({
+              status: 200,
+              result: results,
+            });
+          } else {
+            const error = {
+              status: 404,
+              result: `User with id ${userId} not found`,
+            };
+            next(error);
+          }
+
+          // dbconnection.end((err) => {
+          //   console.log("Pool was closed.");
+          // });
+        }
+      );
+    });
   },
   updateUser: (req, res) => {
     const id = req.params.id;
