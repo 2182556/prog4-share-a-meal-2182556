@@ -89,13 +89,15 @@ module.exports = {
         }
         next(conError)
       }
+      let activeInt = 0
+      if (user.isActive) activeInt = 1
 
       connection.query(
         `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) 
         VALUES(
           '${user.firstName}',
           '${user.lastName}',
-          '${user.isActive}',
+          '${activeInt}',
           '${user.emailAdress}',
           '${user.password}', 
           '${user.phoneNumber}',
@@ -105,7 +107,6 @@ module.exports = {
           );`,
         function (error, results, fields) {
           // connection.release()
-          console.log('after insert')
 
           if (err) {
             const conError = {
@@ -115,9 +116,8 @@ module.exports = {
             next(conError)
           } else {
             connection.query(
-              `SELECT id FROM user WHERE emailAdress='${user.emailAdress}'`,
+              `SELECT * FROM user WHERE emailAdress='${user.emailAdress}'`,
               function (error, results, fields) {
-                console.log('inside select id')
                 connection.release()
                 if (err) {
                   console.log(err.sqlMessage)
@@ -128,13 +128,13 @@ module.exports = {
                   next(conError)
                 } else {
                   console.log(results)
-                  user = {
-                    id: results[0].id,
-                    ...user,
-                  }
+                  // user = {
+                  //   id: results[0].id,
+                  //   ...user,
+                  // }
                   res.status(201).json({
                     status: 201,
-                    result: user,
+                    result: results[0],
                   })
                 }
               }
