@@ -128,13 +128,15 @@ module.exports = {
                   next(conError)
                 } else {
                   console.log(results)
-                  // user = {
-                  //   id: results[0].id,
-                  //   ...user,
-                  // }
+                  let id = 0
+                  if (results.length > 0) id = results[0].id
+                  user = {
+                    id: id,
+                    ...user,
+                  }
                   res.status(201).json({
                     status: 201,
-                    result: results[0],
+                    result: user,
                   })
                 }
               }
