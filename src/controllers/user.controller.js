@@ -57,17 +57,17 @@ module.exports = {
                 message: error.sqlMessage,
               }
               next(err)
-            }
-
-            var user = Object.assign({}, results[0])
-            if (results.length > 0 && user.id != req.params.id) {
-              const err = {
-                status: 409,
-                message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
-              }
-              next(err)
             } else {
-              next()
+              var user = Object.assign({}, results[0])
+              if (results.length > 0 && user.id != req.params.id) {
+                const err = {
+                  status: 409,
+                  message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
+                }
+                next(err)
+              } else {
+                next()
+              }
             }
           }
         )
@@ -112,12 +112,12 @@ module.exports = {
               message: err.sqlMessage,
             }
             next(conError)
+          } else {
+            res.status(201).json({
+              status: 201,
+              message: `User with email address ${user.emailAdress} was added.`,
+            })
           }
-
-          res.status(201).json({
-            status: 201,
-            message: `User with email address ${user.emailAdress} was added.`,
-          })
         }
       )
 
@@ -148,13 +148,13 @@ module.exports = {
               message: error.sqlMessage,
             }
             next(err)
+          } else {
+            console.log('results = ', results.length)
+            res.status(200).json({
+              statusCode: 200,
+              result: results,
+            })
           }
-
-          console.log('results = ', results.length)
-          res.status(200).json({
-            statusCode: 200,
-            result: results,
-          })
 
           // dbconnection.end((err) => {
           //   console.log("Pool was closed.");
@@ -244,33 +244,32 @@ module.exports = {
               message: error.sqlMessage,
             }
             next(err)
-          }
-
-          console.log('results = ', results.length)
-          if (results.length > 0) {
-            console.log(results[0])
-            var user = Object.assign({}, results[0])
-            console.log(user)
-            const updateUserSchema = Joi.object({
-              id: Joi.number().integer().default(`${user.id}`),
-              firstName: Joi.string().default(`${user.firstName}`),
-              lastName: Joi.string().default(`${user.lastName}`),
-              emailAdress: Joi.string()
-                .email({
-                  minDomainSegments: 2,
-                })
-                .default(`${user.emailAdress}`),
-              street: Joi.string().default(`${user.street}`),
-              city: Joi.string().default(`${user.city}`),
-              isActive: Joi.boolean().default(`${user.isActive}`),
-              password: Joi.string().default(`${user.password}`),
-              phoneNumber: Joi.string().default(`${user.phoneNumber}`),
-              roles: Joi.string().default(`${user.phoneNumber}`),
-            })
-            const { error, value } = updateUserSchema.validate(req.body)
-            console.log(value)
-            connection.query(
-              `UPDATE user SET 
+          } else {
+            console.log('results = ', results.length)
+            if (results.length > 0) {
+              console.log(results[0])
+              var user = Object.assign({}, results[0])
+              console.log(user)
+              const updateUserSchema = Joi.object({
+                id: Joi.number().integer().default(`${user.id}`),
+                firstName: Joi.string().default(`${user.firstName}`),
+                lastName: Joi.string().default(`${user.lastName}`),
+                emailAdress: Joi.string()
+                  .email({
+                    minDomainSegments: 2,
+                  })
+                  .default(`${user.emailAdress}`),
+                street: Joi.string().default(`${user.street}`),
+                city: Joi.string().default(`${user.city}`),
+                isActive: Joi.boolean().default(`${user.isActive}`),
+                password: Joi.string().default(`${user.password}`),
+                phoneNumber: Joi.string().default(`${user.phoneNumber}`),
+                roles: Joi.string().default(`${user.phoneNumber}`),
+              })
+              const { error, value } = userSchema.validate(req.body)
+              console.log(value)
+              connection.query(
+                `UPDATE user SET 
               firstName='${value.firstName}',
               lastName='${value.lastName}',
               isActive='${value.isActive}',
@@ -281,29 +280,30 @@ module.exports = {
               street='${value.street}',
               city='${value.city}' 
               WHERE id=${id};`,
-              function (error, results, fields) {
-                connection.release()
+                function (error, results, fields) {
+                  connection.release()
 
-                if (error) {
-                  const err = {
-                    status: 500,
-                    message: error.sqlMessage,
+                  if (error) {
+                    const err = {
+                      status: 500,
+                      message: error.sqlMessage,
+                    }
+                    next(err)
+                  } else {
+                    res.status(200).json({
+                      status: 200,
+                      message: `User with id ${id} has been updated.`,
+                    })
                   }
-                  next(err)
-                } else {
-                  res.status(200).json({
-                    status: 200,
-                    message: `User with id ${id} has been updated.`,
-                  })
                 }
+              )
+            } else {
+              const error = {
+                status: 400,
+                message: `User with id ${id} does not exist`,
               }
-            )
-          } else {
-            const error = {
-              status: 400,
-              message: `User with id ${id} does not exist`,
+              next(error)
             }
-            next(error)
           }
 
           // dbconnection.end((err) => {
@@ -315,13 +315,6 @@ module.exports = {
   },
   deleteUser: (req, res, next) => {
     const id = req.params.id
-    if (id == undefined) {
-      const err = {
-        status: 500,
-        message: 'Please enter a valid id.',
-      }
-      next(err)
-    }
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
@@ -340,41 +333,41 @@ module.exports = {
               message: error.sqlMessage,
             }
             next(err)
-          }
-
-          console.log('results = ', results.length)
-          if (results.length > 0) {
-            connection.query(
-              `DELETE FROM user WHERE id=${id};`,
-              function (error, results, fields) {
-                // console.log(error);
-                // console.log(error.sqlMessage);
-                if (error) {
-                  console.log(error.sqlMessage)
-                  const err = {
-                    status: 500,
-                    message: error.sqlMessage,
-                  }
-                  next(err)
-                } else {
-                  console.log('deleted')
-                  res.status(200).json({
-                    status: 200,
-                    message: `User with id ${id} was deleted.`,
-                  })
-                }
-              }
-            )
-
-            // dbconnection.end((err) => {
-            //   console.log("Pool was closed.");
-            // });
           } else {
-            const err = {
-              status: 400,
-              message: `User with id ${id} does not exist`,
+            console.log('results = ', results.length)
+            if (results.length > 0) {
+              connection.query(
+                `DELETE FROM user WHERE id=${id};`,
+                function (error, results, fields) {
+                  // console.log(error);
+                  // console.log(error.sqlMessage);
+                  if (error) {
+                    console.log(error.sqlMessage)
+                    const err = {
+                      status: 500,
+                      message: error.sqlMessage,
+                    }
+                    next(err)
+                  } else {
+                    console.log('deleted')
+                    res.status(200).json({
+                      status: 200,
+                      message: `User with id ${id} was deleted.`,
+                    })
+                  }
+                }
+              )
+
+              // dbconnection.end((err) => {
+              //   console.log("Pool was closed.");
+              // });
+            } else {
+              const err = {
+                status: 400,
+                message: `User with id ${id} does not exist`,
+              }
+              next(err)
             }
-            next(err)
           }
         }
       )
