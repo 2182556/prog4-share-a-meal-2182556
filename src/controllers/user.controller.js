@@ -29,7 +29,7 @@ module.exports = {
       console.log(error.message)
       const err = {
         status: 400,
-        result: error.message,
+        message: error.message,
       }
       next(err)
     }
@@ -41,7 +41,7 @@ module.exports = {
         if (err) {
           const conError = {
             status: 500,
-            result: err.sqlMessage,
+            message: err.sqlMessage,
           }
           next(conError)
         }
@@ -54,7 +54,7 @@ module.exports = {
             if (error) {
               const err = {
                 status: 500,
-                result: error.sqlMessage,
+                message: error.sqlMessage,
               }
               next(err)
             }
@@ -63,7 +63,7 @@ module.exports = {
             if (results.length > 0 && user.id != req.params.id) {
               const err = {
                 status: 409,
-                result: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
+                message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
               }
               next(err)
             } else {
@@ -85,7 +85,7 @@ module.exports = {
       if (err) {
         const conError = {
           status: 500,
-          result: err.sqlMessage,
+          message: err.sqlMessage,
         }
         next(conError)
       }
@@ -109,14 +109,14 @@ module.exports = {
           if (err) {
             const conError = {
               status: 500,
-              result: err.sqlMessage,
+              message: err.sqlMessage,
             }
             next(conError)
           }
 
           res.status(201).json({
             status: 201,
-            result: `User with email address ${user.emailAdress} was added.`,
+            message: `User with email address ${user.emailAdress} was added.`,
           })
         }
       )
@@ -132,7 +132,7 @@ module.exports = {
       if (err) {
         const conError = {
           status: 500,
-          result: err.sqlMessage,
+          message: err.sqlMessage,
         }
         next(conError)
       }
@@ -145,7 +145,7 @@ module.exports = {
           if (error) {
             const err = {
               status: 500,
-              result: error.sqlMessage,
+              message: error.sqlMessage,
             }
             next(err)
           }
@@ -153,7 +153,7 @@ module.exports = {
           console.log('results = ', results.length)
           res.status(200).json({
             statusCode: 200,
-            results: results,
+            result: results,
           })
 
           // dbconnection.end((err) => {
@@ -166,7 +166,7 @@ module.exports = {
   getUserProfile: (req, res) => {
     res.status(503).json({
       status: 503,
-      result: 'This feature has not been implemented yet.',
+      message: 'This feature has not been implemented yet.',
     })
   },
   getUserById: (req, res, next) => {
@@ -176,7 +176,7 @@ module.exports = {
       if (err) {
         const conError = {
           status: 500,
-          result: err.sqlMessage,
+          message: err.sqlMessage,
         }
         next(conError)
       }
@@ -189,7 +189,7 @@ module.exports = {
           if (error) {
             const err = {
               status: 500,
-              result: error.sqlMessage,
+              message: error.sqlMessage,
             }
             next(err)
           }
@@ -204,7 +204,7 @@ module.exports = {
           } else {
             const err = {
               status: 404,
-              result: `User with id ${userId} not found`,
+              message: `User with id ${userId} not found`,
             }
             next(err)
           }
@@ -222,7 +222,7 @@ module.exports = {
       if (err) {
         const conError = {
           status: 500,
-          result: err.sqlMessage,
+          message: err.sqlMessage,
         }
         next(conError)
       }
@@ -233,7 +233,7 @@ module.exports = {
           if (error) {
             const err = {
               status: 500,
-              result: error.sqlMessage,
+              message: error.sqlMessage,
             }
             next(err)
           }
@@ -279,13 +279,13 @@ module.exports = {
                 if (error) {
                   const err = {
                     status: 500,
-                    result: error.sqlMessage,
+                    message: error.sqlMessage,
                   }
                   next(err)
                 } else {
                   res.status(200).json({
                     status: 200,
-                    result: `User with id ${id} has been updated.`,
+                    message: `User with id ${id} has been updated.`,
                   })
                 }
               }
@@ -293,7 +293,7 @@ module.exports = {
           } else {
             const error = {
               status: 400,
-              result: `User with id ${id} does not exist`,
+              message: `User with id ${id} does not exist`,
             }
             next(error)
           }
@@ -311,7 +311,7 @@ module.exports = {
       if (err) {
         const conError = {
           status: 500,
-          result: err.sqlMessage,
+          message: err.sqlMessage,
         }
         next(conError)
       }
@@ -322,7 +322,7 @@ module.exports = {
           if (error) {
             const err = {
               status: 500,
-              result: error.sqlMessage,
+              message: error.sqlMessage,
             }
             next(err)
           }
@@ -338,14 +338,14 @@ module.exports = {
                   console.log(error.sqlMessage)
                   const err = {
                     status: 500,
-                    result: error.sqlMessage,
+                    message: error.sqlMessage,
                   }
                   next(err)
                 } else {
                   console.log('deleted')
                   res.status(200).json({
                     status: 200,
-                    result: `User with id ${id} was deleted.`,
+                    message: `User with id ${id} was deleted.`,
                   })
                 }
               }
@@ -357,7 +357,7 @@ module.exports = {
           } else {
             const err = {
               status: 400,
-              result: `User with id ${id} does not exist`,
+              message: `User with id ${id} does not exist`,
             }
             next(err)
           }
