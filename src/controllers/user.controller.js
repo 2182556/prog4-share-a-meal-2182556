@@ -116,7 +116,7 @@ module.exports = {
             next(conError)
           } else {
             connection.query(
-              `SELECT * FROM user WHERE emailAdress='${user.emailAdress}'`,
+              `SELECT id FROM user WHERE emailAdress='${user.emailAdress}'`,
               function (error, results, fields) {
                 connection.release()
                 if (err) {
@@ -128,13 +128,13 @@ module.exports = {
                   next(conError)
                 } else {
                   console.log(results)
-                  // user = {
-                  //   id: results[0].id,
-                  //   ...user,
-                  // }
+                  user = {
+                    id: results[0].id,
+                    ...user,
+                  }
                   res.status(201).json({
                     status: 201,
-                    result: results[0],
+                    result: user,
                   })
                 }
               }
