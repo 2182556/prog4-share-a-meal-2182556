@@ -1,9 +1,6 @@
-const database = require('../../database/inmemdb');
-const dbconnection = require('../../database/dbconnection');
-const assert = require('assert');
-const Joi = require('joi');
-let userDatabase = [];
-let id = 0;
+const dbconnection = require('../../database/dbconnection')
+// const assert = require('assert')
+const Joi = require('joi')
 
 const userSchema = Joi.object({
   firstName: Joi.string().required(),
@@ -17,63 +14,63 @@ const userSchema = Joi.object({
   password: Joi.string().required(),
   phoneNumber: Joi.string().default(''),
   roles: Joi.string().default('editor,guest'),
-});
+})
 
 module.exports = {
   validateUser: (req, res, next) => {
-    console.log('Validating input');
-    let user = req.body;
+    console.log('Validating input')
+    let user = req.body
 
-    const { error, value } = userSchema.validate(req.body);
-    console.log(value);
+    const { error, value } = userSchema.validate(req.body)
+    console.log(value)
     if (error == undefined) {
-      next();
+      next()
     } else {
-      console.log(error.message);
+      console.log(error.message)
       const err = {
         status: 400,
         result: error.message,
-      };
-      next(err);
+      }
+      next(err)
     }
   },
   checkUniqueEmail: (req, res, next) => {
-    console.log('Checking if email is unique');
+    console.log('Checking if email is unique')
     if (req.body.emailAdress != undefined) {
       dbconnection.getConnection(function (err, connection) {
-        if (err) throw err;
+        if (err) throw err
 
         connection.query(
           `SELECT * FROM user WHERE emailAdress='${req.body.emailAdress}';`,
           function (error, results, fields) {
-            connection.release();
+            connection.release()
 
-            if (error) throw error;
+            if (error) throw error
 
-            var user = Object.assign({}, results[0]);
+            var user = Object.assign({}, results[0])
             if (results.length > 0 && user.id != req.params.id) {
               const error = {
                 status: 401,
                 result: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
-              };
-              next(error);
+              }
+              next(error)
             } else {
-              next();
+              next()
             }
           }
-        );
-      });
+        )
+      })
     } else {
-      next();
+      next()
     }
   },
   addUser: (req, res) => {
-    const { error, value } = userSchema.validate(req.body);
-    console.log('addUser called');
-    console.log(value);
-    let user = value;
+    const { error, value } = userSchema.validate(req.body)
+    console.log('addUser called')
+    console.log(value)
+    let user = value
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err;
+      if (err) throw err
 
       connection.query(
         `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) 
@@ -89,106 +86,106 @@ module.exports = {
           '${user.city}'
           );`,
         function (error, results, fields) {
-          connection.release();
+          connection.release()
 
           if (error) {
-            console.log(error.sqlMessage);
-            throw error;
+            console.log(error.sqlMessage)
+            throw error
           }
 
           res.status(201).json({
             status: 201,
             result: `User with email address ${user.emailAdress} was added.`,
-          });
+          })
         }
-      );
+      )
 
       // dbconnection.end((err) => {
       //   console.log("Pool was closed.");
       // });
-    });
+    })
   },
   getAllUsers: (req, res, next) => {
-    console.log('getAllUsers called');
+    console.log('getAllUsers called')
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err;
+      if (err) throw err
 
       connection.query(
         'SELECT * FROM user;',
         function (error, results, fields) {
-          connection.release();
+          connection.release()
 
-          if (error) throw error;
+          if (error) throw error
 
-          console.log('results = ', results.length);
+          console.log('results = ', results.length)
           res.status(200).json({
             statusCode: 200,
             results: results,
-          });
+          })
 
           // dbconnection.end((err) => {
           //   console.log("Pool was closed.");
           // });
         }
-      );
-    });
+      )
+    })
   },
   getUserProfile: (req, res) => {
     res.status(503).json({
       status: 503,
       result: 'This feature has not been implemented yet.',
-    });
+    })
   },
   getUserById: (req, res, next) => {
-    console.log('getUserById called');
-    const id = req.params.id;
+    console.log('getUserById called')
+    const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err;
+      if (err) throw err
 
       connection.query(
         `SELECT * FROM user WHERE id=${id};`,
         function (error, results, fields) {
-          connection.release();
+          connection.release()
 
-          if (error) throw error;
+          if (error) throw error
 
-          console.log('results = ', results.length);
+          console.log('results = ', results.length)
           if (results.length > 0) {
-            console.log(results);
+            console.log(results)
             res.status(200).json({
               status: 200,
               result: results,
-            });
+            })
           } else {
             const error = {
               status: 404,
               result: `User with id ${userId} not found`,
-            };
-            next(error);
+            }
+            next(error)
           }
 
           // dbconnection.end((err) => {
           //   console.log("Pool was closed.");
           // });
         }
-      );
-    });
+      )
+    })
   },
   updateUser: (req, res) => {
-    const id = req.params.id;
+    const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err;
+      if (err) throw err
 
       connection.query(
         `SELECT * FROM user WHERE id=${id};`,
         function (error, results, fields) {
-          if (error) throw error;
+          if (error) throw error
 
-          console.log('results = ', results.length);
+          console.log('results = ', results.length)
           if (results.length > 0) {
-            console.log(results[0]);
-            var user = Object.assign({}, results[0]);
-            console.log(user);
+            console.log(results[0])
+            var user = Object.assign({}, results[0])
+            console.log(user)
             const updateUserSchema = Joi.object({
               id: Joi.number().integer().default(`${user.id}`),
               firstName: Joi.string().default(`${user.firstName}`),
@@ -204,54 +201,54 @@ module.exports = {
               password: Joi.string().default(`${user.password}`),
               phoneNumber: Joi.string().default(`${user.phoneNumber}`),
               roles: Joi.string().default(`${user.phoneNumber}`),
-            });
-            const { error, value } = updateUserSchema.validate(req.body);
-            console.log(value);
+            })
+            const { error, value } = updateUserSchema.validate(req.body)
+            console.log(value)
             connection.query(
               `UPDATE user SET firstName='${value.firstName}',lastName='${value.lastName}',isActive='${value.isActive}',emailAdress='${value.emailAdress}',password='${value.password}',phoneNumber='${value.phoneNumber}',roles='${value.roles}',street='${value.street}',city='${value.city}' WHERE id=${id};`,
               function (error, results, fields) {
-                connection.release();
+                connection.release()
 
                 if (error) {
                   const err = {
                     status: 400,
                     result: error.sqlMessage,
-                  };
-                  next(err);
+                  }
+                  next(err)
                 } else {
                   res.status(200).json({
                     status: 200,
                     result: `User with id ${id} has been updated.`,
-                  });
+                  })
                 }
               }
-            );
+            )
           } else {
             const error = {
               status: 404,
               result: `User with id ${id} not found`,
-            };
-            next(error);
+            }
+            next(error)
           }
 
           // dbconnection.end((err) => {
           //   console.log("Pool was closed.");
           // });
         }
-      );
-    });
+      )
+    })
   },
   deleteUser: (req, res, next) => {
-    const id = req.params.id;
+    const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err;
+      if (err) throw err
 
       connection.query(
         `SELECT * FROM user WHERE id=${id};`,
         function (error, results, fields) {
-          if (error) throw error;
+          if (error) throw error
 
-          console.log('results = ', results.length);
+          console.log('results = ', results.length)
           if (results.length > 0) {
             connection.query(
               `DELETE FROM user WHERE id=${id};`,
@@ -259,21 +256,21 @@ module.exports = {
                 // console.log(error);
                 // console.log(error.sqlMessage);
                 if (error) {
-                  console.log(error.sqlMessage);
+                  console.log(error.sqlMessage)
                   const err = {
                     status: 400,
                     result: error.sqlMessage,
-                  };
-                  next(err);
+                  }
+                  next(err)
                 } else {
-                  console.log('deleted');
+                  console.log('deleted')
                   res.status(201).json({
                     status: 201,
                     result: `User with id ${id} was deleted.`,
-                  });
+                  })
                 }
               }
-            );
+            )
 
             // dbconnection.end((err) => {
             //   console.log("Pool was closed.");
@@ -282,11 +279,11 @@ module.exports = {
             const err = {
               status: 404,
               result: `User with id ${id} not found`,
-            };
-            next(err);
+            }
+            next(err)
           }
         }
-      );
-    });
+      )
+    })
   },
-};
+}
