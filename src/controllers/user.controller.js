@@ -268,11 +268,13 @@ module.exports = {
                 next(err)
               } else {
                 console.log(value)
+                let activeInt = 0
+                if (value.isActive) activeInt = 1
                 connection.query(
                   `UPDATE user SET 
               firstName='${value.firstName}',
               lastName='${value.lastName}',
-              isActive='${value.isActive}',
+              isActive='${activeInt}',
               emailAdress='${value.emailAdress}',
               password='${value.password}',
               phoneNumber='${value.phoneNumber}',

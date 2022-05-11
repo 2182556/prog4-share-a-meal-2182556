@@ -362,7 +362,6 @@ describe('Manage users', () => {
         .request(server)
         .put('/api/user/1')
         .send({
-          //email is missing
           emailAdress: 'anyemail@gmail.com',
           firstName: 'Assertion',
           lastName: 'Server',
