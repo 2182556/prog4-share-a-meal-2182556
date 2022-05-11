@@ -60,6 +60,7 @@ module.exports = {
             } else {
               var user = Object.assign({}, results[0])
               if (results.length > 0 && user.id != req.params.id) {
+                console.log(user.id)
                 const err = {
                   status: 409,
                   message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
@@ -90,7 +91,7 @@ module.exports = {
         next(conError)
       }
       let activeInt = 1
-      if (!user.isActive.boolean) activeInt = 0
+      if (!user.isActive) activeInt = 0
 
       connection.query(
         `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) 
@@ -116,7 +117,8 @@ module.exports = {
             next(conError)
           } else {
             connection.query(
-              `SELECT * FROM user WHERE emailAdress='${user.emailAdress}'`,
+              'SELECT * FROM user WHERE emailAdress=?',
+              [user.emailAdress],
               function (error, results, fields) {
                 connection.release()
                 if (err) {
@@ -293,19 +295,32 @@ module.exports = {
               } else {
                 console.log(value)
                 let activeInt = 1
-                if (!value.isActive.boolean) activeInt = 0
+                if (!value.isActive) activeInt = 0
                 connection.query(
-                  `UPDATE user SET 
-              firstName='${value.firstName}',
-              lastName='${value.lastName}',
-              isActive='${activeInt}',
-              emailAdress='${value.emailAdress}',
-              password='${value.password}',
-              phoneNumber='${value.phoneNumber}',
-              roles='${value.roles}',
-              street='${value.street}',
-              city='${value.city}' 
-              WHERE id=${id};`,
+                  'UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?',
+                  [
+                    value.firstName,
+                    value.lastName,
+                    activeInt,
+                    value.emailAdress,
+                    value.password,
+                    value.phoneNumber,
+                    value.roles,
+                    value.street,
+                    value.city,
+                  ],
+                  //   connection.query(
+                  //     `UPDATE user SET
+                  // firstName='${value.firstName}',
+                  // lastName='${value.lastName}',
+                  // isActive='${activeInt}',
+                  // emailAdress='${value.emailAdress}',
+                  // password='${value.password}',
+                  // phoneNumber='${value.phoneNumber}',
+                  // roles='${value.roles}',
+                  // street='${value.street}',
+                  // city='${value.city}'
+                  // WHERE id=${id};`,
                   function (error, results, fields) {
                     connection.release()
 
