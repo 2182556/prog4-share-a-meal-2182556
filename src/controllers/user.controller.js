@@ -172,13 +172,7 @@ module.exports = {
   getUserById: (req, res, next) => {
     console.log('getUserById called')
     const id = req.params.id
-    if (id == undefined) {
-      const err = {
-        status: 500,
-        message: 'Please enter a valid id.',
-      }
-      next(err)
-    }
+    console.log(id)
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
@@ -194,26 +188,28 @@ module.exports = {
           connection.release()
 
           if (error) {
+            console.log('error')
             const err = {
               status: 500,
               message: error.sqlMessage,
             }
             next(err)
-          }
-
-          console.log('results = ', results.length)
-          if (results.length > 0) {
-            console.log(results)
-            res.status(200).json({
-              status: 200,
-              result: results,
-            })
           } else {
-            const err = {
-              status: 404,
-              message: `User with id ${id} not found`,
+            console.log(results)
+            console.log('results = ', results.length)
+            if (results.length > 0) {
+              console.log(results)
+              res.status(200).json({
+                status: 200,
+                result: results,
+              })
+            } else {
+              const err = {
+                status: 404,
+                message: `User with id ${id} not found`,
+              }
+              next(err)
             }
-            next(err)
           }
 
           // dbconnection.end((err) => {
