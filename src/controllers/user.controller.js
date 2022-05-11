@@ -13,7 +13,7 @@ const userSchema = Joi.object({
   isActive: Joi.boolean().required().default(1),
   password: Joi.string().required(),
   phoneNumber: Joi.string().required().default(''),
-  roles: Joi.string().required().default('editor,guest'),
+  // roles: Joi.string().required().default('editor,guest'),
 })
 
 module.exports = {
@@ -300,7 +300,7 @@ module.exports = {
             } else {
               const error = {
                 status: 400,
-                message: `User with id ${id} does not exist`,
+                message: `User does not exist`,
               }
               next(error)
             }
@@ -364,7 +364,7 @@ module.exports = {
             } else {
               const err = {
                 status: 400,
-                message: `User with id ${id} does not exist`,
+                message: `User does not exist`,
               }
               next(err)
             }
