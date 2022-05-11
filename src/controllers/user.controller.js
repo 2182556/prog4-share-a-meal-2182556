@@ -8,12 +8,12 @@ const userSchema = Joi.object({
   emailAdress: Joi.string().required().email({
     minDomainSegments: 2,
   }),
-  street: Joi.string().default(''),
-  city: Joi.string().default(1),
-  isActive: Joi.boolean().default(1),
+  street: Joi.string().required().default(''),
+  city: Joi.string().required().default(1),
+  isActive: Joi.boolean().required().default(1),
   password: Joi.string().required(),
-  phoneNumber: Joi.string().default(''),
-  roles: Joi.string().default('editor,guest'),
+  phoneNumber: Joi.string().required().default(''),
+  roles: Joi.string().required().default('editor,guest'),
 })
 
 module.exports = {
