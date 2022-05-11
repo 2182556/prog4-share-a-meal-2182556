@@ -314,9 +314,13 @@ module.exports = {
                       }
                       next(err)
                     } else {
+                      let user = {
+                        id: id,
+                        ...value,
+                      }
                       res.status(200).json({
                         status: 200,
-                        result: `User with id ${id} has been updated.`,
+                        result: user,
                       })
                     }
                   }
@@ -377,7 +381,7 @@ module.exports = {
                     console.log('deleted')
                     res.status(200).json({
                       status: 200,
-                      result: `User with id ${id} was deleted.`,
+                      message: `User with id ${id} was deleted.`,
                     })
                   }
                 }
