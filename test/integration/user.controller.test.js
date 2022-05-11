@@ -49,7 +49,7 @@ describe('Manage users', () => {
     //   done()
     // })
     //add it.only if you only want to test one several times (or it.skip)
-    it('TC-201-1 When a required input is missing, a validation error should be returned', (done) => {
+    it.skip('TC-201-1 When a required input is missing, a validation error should be returned', (done) => {
       chai
         .request(server)
         .post('/api/user')
