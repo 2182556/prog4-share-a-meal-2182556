@@ -199,7 +199,7 @@ module.exports = {
               console.log(results)
               res.status(200).json({
                 status: 200,
-                result: results,
+                result: results[0],
               })
             } else {
               const err = {
@@ -219,13 +219,6 @@ module.exports = {
   },
   updateUser: (req, res, next) => {
     const id = req.params.id
-    if (id == undefined) {
-      const err = {
-        status: 500,
-        message: 'Please enter a valid id.',
-      }
-      next(err)
-    }
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
@@ -267,9 +260,16 @@ module.exports = {
                 roles: Joi.string().default(`${user.phoneNumber}`),
               })
               const { error, value } = userSchema.validate(req.body)
-              console.log(value)
-              connection.query(
-                `UPDATE user SET 
+              if (error) {
+                const err = {
+                  status: 400,
+                  message: error.message,
+                }
+                next(err)
+              } else {
+                console.log(value)
+                connection.query(
+                  `UPDATE user SET 
               firstName='${value.firstName}',
               lastName='${value.lastName}',
               isActive='${value.isActive}',
@@ -280,23 +280,24 @@ module.exports = {
               street='${value.street}',
               city='${value.city}' 
               WHERE id=${id};`,
-                function (error, results, fields) {
-                  connection.release()
+                  function (error, results, fields) {
+                    connection.release()
 
-                  if (error) {
-                    const err = {
-                      status: 500,
-                      message: error.sqlMessage,
+                    if (error) {
+                      const err = {
+                        status: 500,
+                        message: error.sqlMessage,
+                      }
+                      next(err)
+                    } else {
+                      res.status(200).json({
+                        status: 200,
+                        result: `User with id ${id} has been updated.`,
+                      })
                     }
-                    next(err)
-                  } else {
-                    res.status(200).json({
-                      status: 200,
-                      result: `User with id ${id} has been updated.`,
-                    })
                   }
-                }
-              )
+                )
+              }
             } else {
               const error = {
                 status: 400,
