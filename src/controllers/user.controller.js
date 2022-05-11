@@ -115,7 +115,7 @@ module.exports = {
           } else {
             res.status(201).json({
               status: 201,
-              result: `User with email address ${user.emailAdress} was added.`,
+              result: user,
             })
           }
         }
