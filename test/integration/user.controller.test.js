@@ -36,7 +36,7 @@ const INSERT_MEALS =
   "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
 
 describe('Manage users', () => {
-  before((done) => {
+  beforeEach((done) => {
     dbconnection.getConnection(function (err, connection) {
       if (err) throw err
 
@@ -320,7 +320,7 @@ describe('Manage users', () => {
   })
 
   describe('UC-205 Update user /api/user', () => {
-    it.skip('TC-205-1 When a required input is missing, a validation error should be returned', (done) => {
+    it('TC-205-1 When a required input is missing, a validation error should be returned', (done) => {
       chai
         .request(server)
         .put('/api/user/1')
@@ -341,6 +341,7 @@ describe('Manage users', () => {
           console.log(status, message)
           status.should.equal(400)
           message.should.be.a('string').that.equals('"emailAdress" is required')
+          done()
         })
     })
     //phoneNumber validation not yet implemented
@@ -356,7 +357,7 @@ describe('Manage users', () => {
           done()
         })
     })
-    it.only('TC-205-6 User succesfully updated', (done) => {
+    it('TC-205-6 User succesfully updated', (done) => {
       chai
         .request(server)
         .put('/api/user/1')
@@ -382,20 +383,21 @@ describe('Manage users', () => {
   })
 
   describe('UC-206 Delete user /api/user/:id', () => {
-    it.only('TC-206-1 When a user does not exist ', (done) => {
+    it('TC-206-1 When a user does not exist ', (done) => {
       chai
         .request(server)
         .delete('/api/user/1111')
         .end((err, res) => {
           // res.should.be.an('');
-          let { status, result } = res.body
-          console.log(status, result)
+          let { status, message } = res.body
+          console.log(status)
           status.should.equal(400)
           // result.should.be.a('string').that.equals('');
+          done()
         })
     })
     //add it.only if you only want to test one several times (or it.skip)
-    it.only('TC-206-4 When a user is removed ', (done) => {
+    it('TC-206-4 When a user is removed ', (done) => {
       chai
         .request(server)
         .delete('/api/user/1')

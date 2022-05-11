@@ -363,6 +363,10 @@ module.exports = {
               //   console.log("Pool was closed.");
               // });
             } else {
+              // res.status(400).json({
+              //   status: 400,
+              //   result: `User does not exist`,
+              // })
               const err = {
                 status: 400,
                 message: `User does not exist`,
