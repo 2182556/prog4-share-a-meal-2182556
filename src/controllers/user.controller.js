@@ -13,7 +13,7 @@ const userSchema = Joi.object({
   isActive: Joi.boolean().required().default(1),
   password: Joi.string().required(),
   phoneNumber: Joi.string().required().default(''),
-  // roles: Joi.string().required().default('editor,guest'),
+  roles: Joi.string().default('editor,guest'),
 })
 
 module.exports = {
@@ -115,7 +115,7 @@ module.exports = {
           } else {
             res.status(201).json({
               status: 201,
-              message: `User with email address ${user.emailAdress} was added.`,
+              result: `User with email address ${user.emailAdress} was added.`,
             })
           }
         }
@@ -292,7 +292,7 @@ module.exports = {
                   } else {
                     res.status(200).json({
                       status: 200,
-                      message: `User with id ${id} has been updated.`,
+                      result: `User with id ${id} has been updated.`,
                     })
                   }
                 }
@@ -352,7 +352,7 @@ module.exports = {
                     console.log('deleted')
                     res.status(200).json({
                       status: 200,
-                      message: `User with id ${id} was deleted.`,
+                      result: `User with id ${id} was deleted.`,
                     })
                   }
                 }
