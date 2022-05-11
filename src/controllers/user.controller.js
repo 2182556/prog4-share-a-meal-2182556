@@ -62,7 +62,7 @@ module.exports = {
             var user = Object.assign({}, results[0])
             if (results.length > 0 && user.id != req.params.id) {
               const err = {
-                status: 409,
+                status: 400,
                 message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
               }
               next(err)
@@ -204,7 +204,7 @@ module.exports = {
           } else {
             const err = {
               status: 404,
-              message: `User with id ${userId} not found`,
+              message: `User with id ${id} not found`,
             }
             next(err)
           }
