@@ -76,7 +76,7 @@ module.exports = {
       next()
     }
   },
-  addUser: (req, res) => {
+  addUser: (req, res, next) => {
     const { error, value } = userSchema.validate(req.body)
     console.log('addUser called')
     console.log(value)
@@ -163,7 +163,7 @@ module.exports = {
       )
     })
   },
-  getUserProfile: (req, res) => {
+  getUserProfile: (req, res, next) => {
     res.status(503).json({
       status: 503,
       message: 'This feature has not been implemented yet.',
@@ -188,14 +188,12 @@ module.exports = {
           connection.release()
 
           if (error) {
-            console.log('error')
             const err = {
               status: 500,
               message: error.sqlMessage,
             }
             next(err)
           } else {
-            console.log(results)
             console.log('results = ', results.length)
             if (results.length > 0) {
               console.log(results)
@@ -219,7 +217,7 @@ module.exports = {
       )
     })
   },
-  updateUser: (req, res) => {
+  updateUser: (req, res, next) => {
     const id = req.params.id
     if (id == undefined) {
       const err = {
