@@ -89,8 +89,8 @@ module.exports = {
         }
         next(conError)
       }
-      let activeInt = 0
-      if (user.isActive) activeInt = 1
+      let activeInt = 1
+      if (!user.isActive.boolean) activeInt = 0
 
       connection.query(
         `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) 
@@ -116,7 +116,7 @@ module.exports = {
             next(conError)
           } else {
             connection.query(
-              `SELECT id FROM user WHERE emailAdress='${user.emailAdress}'`,
+              `SELECT * FROM user WHERE emailAdress='${user.emailAdress}'`,
               function (error, results, fields) {
                 connection.release()
                 if (err) {
@@ -128,13 +128,13 @@ module.exports = {
                   next(conError)
                 } else {
                   console.log(results)
-                  user = {
-                    id: results[0].id,
-                    ...user,
-                  }
+                  // user = {
+                  //   id: results[0].id,
+                  //   ...user,
+                  // }
                   res.status(201).json({
                     status: 201,
-                    result: user,
+                    result: results[0],
                   })
                 }
               }
@@ -290,8 +290,8 @@ module.exports = {
                 next(err)
               } else {
                 console.log(value)
-                let activeInt = 0
-                if (value.isActive) activeInt = 1
+                let activeInt = 1
+                if (!value.isActive.boolean) activeInt = 0
                 connection.query(
                   `UPDATE user SET 
               firstName='${value.firstName}',
