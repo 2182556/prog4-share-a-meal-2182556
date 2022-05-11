@@ -38,22 +38,34 @@ module.exports = {
     console.log('Checking if email is unique')
     if (req.body.emailAdress != undefined) {
       dbconnection.getConnection(function (err, connection) {
-        if (err) throw err
+        if (err) {
+          const conError = {
+            status: 500,
+            result: err.sqlMessage,
+          }
+          next(conError)
+        }
 
         connection.query(
           `SELECT * FROM user WHERE emailAdress='${req.body.emailAdress}';`,
           function (error, results, fields) {
             connection.release()
 
-            if (error) throw error
+            if (error) {
+              const err = {
+                status: 500,
+                result: error.sqlMessage,
+              }
+              next(err)
+            }
 
             var user = Object.assign({}, results[0])
             if (results.length > 0 && user.id != req.params.id) {
-              const error = {
-                status: 401,
+              const err = {
+                status: 409,
                 result: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
               }
-              next(error)
+              next(err)
             } else {
               next()
             }
@@ -70,7 +82,13 @@ module.exports = {
     console.log(value)
     let user = value
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err
+      if (err) {
+        const conError = {
+          status: 500,
+          result: err.sqlMessage,
+        }
+        next(conError)
+      }
 
       connection.query(
         `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) 
@@ -88,9 +106,12 @@ module.exports = {
         function (error, results, fields) {
           connection.release()
 
-          if (error) {
-            console.log(error.sqlMessage)
-            throw error
+          if (err) {
+            const conError = {
+              status: 500,
+              result: err.sqlMessage,
+            }
+            next(conError)
           }
 
           res.status(201).json({
@@ -108,14 +129,26 @@ module.exports = {
   getAllUsers: (req, res, next) => {
     console.log('getAllUsers called')
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err
+      if (err) {
+        const conError = {
+          status: 500,
+          result: err.sqlMessage,
+        }
+        next(conError)
+      }
 
       connection.query(
         'SELECT * FROM user;',
         function (error, results, fields) {
           connection.release()
 
-          if (error) throw error
+          if (error) {
+            const err = {
+              status: 500,
+              result: error.sqlMessage,
+            }
+            next(err)
+          }
 
           console.log('results = ', results.length)
           res.status(200).json({
@@ -140,14 +173,26 @@ module.exports = {
     console.log('getUserById called')
     const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err
+      if (err) {
+        const conError = {
+          status: 500,
+          result: err.sqlMessage,
+        }
+        next(conError)
+      }
 
       connection.query(
         `SELECT * FROM user WHERE id=${id};`,
         function (error, results, fields) {
           connection.release()
 
-          if (error) throw error
+          if (error) {
+            const err = {
+              status: 500,
+              result: error.sqlMessage,
+            }
+            next(err)
+          }
 
           console.log('results = ', results.length)
           if (results.length > 0) {
@@ -157,11 +202,11 @@ module.exports = {
               result: results,
             })
           } else {
-            const error = {
+            const err = {
               status: 404,
               result: `User with id ${userId} not found`,
             }
-            next(error)
+            next(err)
           }
 
           // dbconnection.end((err) => {
@@ -174,12 +219,24 @@ module.exports = {
   updateUser: (req, res) => {
     const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err
+      if (err) {
+        const conError = {
+          status: 500,
+          result: err.sqlMessage,
+        }
+        next(conError)
+      }
 
       connection.query(
         `SELECT * FROM user WHERE id=${id};`,
         function (error, results, fields) {
-          if (error) throw error
+          if (error) {
+            const err = {
+              status: 500,
+              result: error.sqlMessage,
+            }
+            next(err)
+          }
 
           console.log('results = ', results.length)
           if (results.length > 0) {
@@ -205,13 +262,23 @@ module.exports = {
             const { error, value } = updateUserSchema.validate(req.body)
             console.log(value)
             connection.query(
-              `UPDATE user SET firstName='${value.firstName}',lastName='${value.lastName}',isActive='${value.isActive}',emailAdress='${value.emailAdress}',password='${value.password}',phoneNumber='${value.phoneNumber}',roles='${value.roles}',street='${value.street}',city='${value.city}' WHERE id=${id};`,
+              `UPDATE user SET 
+              firstName='${value.firstName}',
+              lastName='${value.lastName}',
+              isActive='${value.isActive}',
+              emailAdress='${value.emailAdress}',
+              password='${value.password}',
+              phoneNumber='${value.phoneNumber}',
+              roles='${value.roles}',
+              street='${value.street}',
+              city='${value.city}' 
+              WHERE id=${id};`,
               function (error, results, fields) {
                 connection.release()
 
                 if (error) {
                   const err = {
-                    status: 400,
+                    status: 500,
                     result: error.sqlMessage,
                   }
                   next(err)
@@ -225,8 +292,8 @@ module.exports = {
             )
           } else {
             const error = {
-              status: 404,
-              result: `User with id ${id} not found`,
+              status: 400,
+              result: `User with id ${id} does not exist`,
             }
             next(error)
           }
@@ -241,12 +308,24 @@ module.exports = {
   deleteUser: (req, res, next) => {
     const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
-      if (err) throw err
+      if (err) {
+        const conError = {
+          status: 500,
+          result: err.sqlMessage,
+        }
+        next(conError)
+      }
 
       connection.query(
         `SELECT * FROM user WHERE id=${id};`,
         function (error, results, fields) {
-          if (error) throw error
+          if (error) {
+            const err = {
+              status: 500,
+              result: error.sqlMessage,
+            }
+            next(err)
+          }
 
           console.log('results = ', results.length)
           if (results.length > 0) {
@@ -258,14 +337,14 @@ module.exports = {
                 if (error) {
                   console.log(error.sqlMessage)
                   const err = {
-                    status: 400,
+                    status: 500,
                     result: error.sqlMessage,
                   }
                   next(err)
                 } else {
                   console.log('deleted')
-                  res.status(201).json({
-                    status: 201,
+                  res.status(200).json({
+                    status: 200,
                     result: `User with id ${id} was deleted.`,
                   })
                 }
@@ -277,8 +356,8 @@ module.exports = {
             // });
           } else {
             const err = {
-              status: 404,
-              result: `User with id ${id} not found`,
+              status: 400,
+              result: `User with id ${id} does not exist`,
             }
             next(err)
           }
