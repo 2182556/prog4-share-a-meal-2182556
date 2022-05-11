@@ -255,7 +255,8 @@ module.exports = {
       }
 
       connection.query(
-        `SELECT * FROM user WHERE id=${id};`,
+        'SELECT * FROM user WHERE id=?;',
+        [id],
         function (error, results, fields) {
           if (error) {
             const err = {
@@ -308,6 +309,7 @@ module.exports = {
                     value.roles,
                     value.street,
                     value.city,
+                    id,
                   ],
                   //   connection.query(
                   //     `UPDATE user SET
