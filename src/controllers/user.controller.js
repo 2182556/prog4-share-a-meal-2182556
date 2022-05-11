@@ -10,7 +10,7 @@ const userSchema = Joi.object({
   }),
   street: Joi.string().default(''),
   city: Joi.string().default(1),
-  isActive: Joi.boolean().default(true),
+  isActive: Joi.boolean().default(1),
   password: Joi.string().required(),
   phoneNumber: Joi.string().default(''),
   roles: Joi.string().default('editor,guest'),
