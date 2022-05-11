@@ -62,7 +62,7 @@ module.exports = {
             var user = Object.assign({}, results[0])
             if (results.length > 0 && user.id != req.params.id) {
               const err = {
-                status: 400,
+                status: 409,
                 message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
               }
               next(err)
@@ -172,6 +172,13 @@ module.exports = {
   getUserById: (req, res, next) => {
     console.log('getUserById called')
     const id = req.params.id
+    if (id == undefined) {
+      const err = {
+        status: 500,
+        message: 'Please enter a valid id.',
+      }
+      next(err)
+    }
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
@@ -218,6 +225,13 @@ module.exports = {
   },
   updateUser: (req, res) => {
     const id = req.params.id
+    if (id == undefined) {
+      const err = {
+        status: 500,
+        message: 'Please enter a valid id.',
+      }
+      next(err)
+    }
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
@@ -307,6 +321,13 @@ module.exports = {
   },
   deleteUser: (req, res, next) => {
     const id = req.params.id
+    if (id == undefined) {
+      const err = {
+        status: 500,
+        message: 'Please enter a valid id.',
+      }
+      next(err)
+    }
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
