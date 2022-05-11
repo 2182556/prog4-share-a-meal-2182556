@@ -217,7 +217,7 @@ describe('Manage users', () => {
         })
     })
 
-    it.only('TC-201-5 If none of the above apply, a user should be succesfully added.', (done) => {
+    it('TC-201-5 If none of the above apply, a user should be succesfully added.', (done) => {
       chai
         .request(server)
         .post('/api/user')
@@ -395,7 +395,6 @@ describe('Manage users', () => {
           done()
         })
     })
-    //add it.only if you only want to test one several times (or it.skip)
     it('TC-206-4 When a user is removed ', (done) => {
       chai
         .request(server)

@@ -97,7 +97,7 @@ module.exports = {
         VALUES(
           '${user.firstName}',
           '${user.lastName}',
-          '${activeInt}',
+          '${user.isActive}',
           '${user.emailAdress}',
           '${user.password}', 
           '${user.phoneNumber}',
