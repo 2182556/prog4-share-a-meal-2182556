@@ -118,7 +118,7 @@ describe('Manage users', () => {
 
     it.skip('TC-201-3 When an invalid password is submitted, a validation error should be returned', (done) => {})
 
-    it('TC-201-4 When an emailadress is already in use, an error should be returned', (done) => {
+    it.skip('TC-201-4 When an emailadress is already in use, an error should be returned', (done) => {
       chai
         .request(server)
         .post('/api/user')
