@@ -104,7 +104,8 @@ module.exports = {
           '${user.city}'
           );`,
         function (error, results, fields) {
-          connection.release()
+          // connection.release()
+          console.log('after insert')
 
           if (err) {
             const conError = {
@@ -113,10 +114,31 @@ module.exports = {
             }
             next(conError)
           } else {
-            res.status(201).json({
-              status: 201,
-              result: user,
-            })
+            connection.query(
+              `SELECT id FROM user WHERE emailAdress='${user.emailAdress}'`,
+              function (error, results, fields) {
+                console.log('inside select id')
+                connection.release()
+                if (err) {
+                  console.log(err.sqlMessage)
+                  const conError = {
+                    status: 500,
+                    message: err.sqlMessage,
+                  }
+                  next(conError)
+                } else {
+                  console.log(results)
+                  user = {
+                    id: results[0].id,
+                    ...user,
+                  }
+                  res.status(201).json({
+                    status: 201,
+                    result: user,
+                  })
+                }
+              }
+            )
           }
         }
       )
