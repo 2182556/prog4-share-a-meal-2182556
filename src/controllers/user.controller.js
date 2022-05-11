@@ -5,22 +5,27 @@ const Joi = require('joi');
 let userDatabase = [];
 let id = 0;
 
+const userSchema = Joi.object({
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
+  emailAdress: Joi.string().required().email({
+    minDomainSegments: 2,
+  }),
+  street: Joi.string().default(''),
+  city: Joi.string().default(1),
+  isActive: Joi.boolean().default(true),
+  password: Joi.string().required(),
+  phoneNumber: Joi.string().default(''),
+  roles: Joi.string().default('editor,guest'),
+});
+
 module.exports = {
-  //npm joi api for better error handling
   validateUser: (req, res, next) => {
+    console.log('Validating input');
     let user = req.body;
-    const schema = Joi.object({
-      firstName: Joi.string().required(),
-      lastName: Joi.string().required(),
-      password: Joi.string().required(),
-      emailAdress: Joi.string().required().email({
-        minDomainSegments: 2,
-      }),
-    });
 
-    // let { firstName, lastName, emailAdress, password } = user;
-
-    const { error, value } = schema.validate(req.body);
+    const { error, value } = userSchema.validate(req.body);
+    console.log(value);
     if (error == undefined) {
       next();
     } else {
@@ -32,36 +37,76 @@ module.exports = {
       next(err);
     }
   },
-  addUser: (req, res) => {
-    let user = req.body;
-    console.log(user);
-    let email = user.emailAdress;
-    if (email == undefined) {
-      res.status(400).json({
-        status: 400,
-        result: "Please enter a value for 'emailAdress'.",
+  checkUniqueEmail: (req, res, next) => {
+    console.log('Checking if email is unique');
+    if (req.body.emailAdress != undefined) {
+      dbconnection.getConnection(function (err, connection) {
+        if (err) throw err;
+
+        connection.query(
+          `SELECT * FROM user WHERE emailAdress='${req.body.emailAdress}';`,
+          function (error, results, fields) {
+            connection.release();
+
+            if (error) throw error;
+
+            var user = Object.assign({}, results[0]);
+            if (results.length > 0 && user.id != req.params.id) {
+              const error = {
+                status: 401,
+                result: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
+              };
+              next(error);
+            } else {
+              next();
+            }
+          }
+        );
       });
     } else {
-      let userArray = userDatabase.filter((item) => item.emailAdress == email);
-      if (userArray.length > 0) {
-        res.status(401).json({
-          status: 401,
-          result: `The email address ${email} is already in use, please use a different emailaddress or log in.`,
-        });
-      } else {
-        id++;
-        user = {
-          id,
-          ...user,
-        };
-        userDatabase.push(user);
-        console.log(userDatabase);
-        res.status(201).json({
-          status: 201,
-          result: `User with email address ${email} was added.`,
-        });
-      }
+      next();
     }
+  },
+  addUser: (req, res) => {
+    const { error, value } = userSchema.validate(req.body);
+    console.log('addUser called');
+    console.log(value);
+    let user = value;
+    dbconnection.getConnection(function (err, connection) {
+      if (err) throw err;
+
+      connection.query(
+        `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) 
+        VALUES(
+          '${user.firstName}',
+          '${user.lastName}',
+          '${user.isActive}',
+          '${user.emailAdress}',
+          '${user.password}', 
+          '${user.phoneNumber}',
+          '${user.roles}',
+          '${user.street}',
+          '${user.city}'
+          );`,
+        function (error, results, fields) {
+          connection.release();
+
+          if (error) {
+            console.log(error.sqlMessage);
+            throw error;
+          }
+
+          res.status(201).json({
+            status: 201,
+            result: `User with email address ${user.emailAdress} was added.`,
+          });
+        }
+      );
+
+      // dbconnection.end((err) => {
+      //   console.log("Pool was closed.");
+      // });
+    });
   },
   getAllUsers: (req, res, next) => {
     console.log('getAllUsers called');
@@ -96,12 +141,12 @@ module.exports = {
   },
   getUserById: (req, res, next) => {
     console.log('getUserById called');
-    const userId = req.params.userId;
+    const id = req.params.id;
     dbconnection.getConnection(function (err, connection) {
       if (err) throw err;
 
       connection.query(
-        `SELECT * FROM user WHERE id=${userId};`,
+        `SELECT * FROM user WHERE id=${id};`,
         function (error, results, fields) {
           connection.release();
 
@@ -109,7 +154,7 @@ module.exports = {
 
           console.log('results = ', results.length);
           if (results.length > 0) {
-            console.log(userArray);
+            console.log(results);
             res.status(200).json({
               status: 200,
               result: results,
@@ -131,59 +176,117 @@ module.exports = {
   },
   updateUser: (req, res) => {
     const id = req.params.id;
-    let userArray = userDatabase.filter((item) => item.id == id);
-    if (userArray.length > 0) {
-      console.log(userArray);
-      let user = req.body;
-      user = {
-        id,
-        ...user,
-      };
-      let email = user.emailAdress;
-      if (email == undefined) {
-        res.status(400).json({
-          status: 400,
-          result: "Please enter a value for 'emailAdress'.",
-        });
-      } else {
-        let userArray = userDatabase.filter(
-          (item) => item.emailAdress == email
-        );
-        if (userArray.length > 0 && id != userArray[0].id) {
-          res.status(401).json({
-            status: 401,
-            result: `The email address ${email} is already in use, please use a different emailaddress.`,
-          });
-        } else {
-          userDatabase[userDatabase.indexOf(userArray[0])] = user;
-          res.status(201).json({
-            status: 201,
-            result: `User with id ${id} was updated.`,
-          });
+    dbconnection.getConnection(function (err, connection) {
+      if (err) throw err;
+
+      connection.query(
+        `SELECT * FROM user WHERE id=${id};`,
+        function (error, results, fields) {
+          if (error) throw error;
+
+          console.log('results = ', results.length);
+          if (results.length > 0) {
+            console.log(results[0]);
+            var user = Object.assign({}, results[0]);
+            console.log(user);
+            const updateUserSchema = Joi.object({
+              id: Joi.number().integer().default(`${user.id}`),
+              firstName: Joi.string().default(`${user.firstName}`),
+              lastName: Joi.string().default(`${user.lastName}`),
+              emailAdress: Joi.string()
+                .email({
+                  minDomainSegments: 2,
+                })
+                .default(`${user.emailAdress}`),
+              street: Joi.string().default(`${user.street}`),
+              city: Joi.string().default(`${user.city}`),
+              isActive: Joi.boolean().default(`${user.isActive}`),
+              password: Joi.string().default(`${user.password}`),
+              phoneNumber: Joi.string().default(`${user.phoneNumber}`),
+              roles: Joi.string().default(`${user.phoneNumber}`),
+            });
+            const { error, value } = updateUserSchema.validate(req.body);
+            console.log(value);
+            connection.query(
+              `UPDATE user SET firstName='${value.firstName}',lastName='${value.lastName}',isActive='${value.isActive}',emailAdress='${value.emailAdress}',password='${value.password}',phoneNumber='${value.phoneNumber}',roles='${value.roles}',street='${value.street}',city='${value.city}' WHERE id=${id};`,
+              function (error, results, fields) {
+                connection.release();
+
+                if (error) {
+                  const err = {
+                    status: 400,
+                    result: error.sqlMessage,
+                  };
+                  next(err);
+                } else {
+                  res.status(200).json({
+                    status: 200,
+                    result: `User with id ${id} has been updated.`,
+                  });
+                }
+              }
+            );
+          } else {
+            const error = {
+              status: 404,
+              result: `User with id ${id} not found`,
+            };
+            next(error);
+          }
+
+          // dbconnection.end((err) => {
+          //   console.log("Pool was closed.");
+          // });
         }
-      }
-    } else {
-      res.status(404).json({
-        status: 404,
-        result: `User with id ${id} not found`,
-      });
-    }
+      );
+    });
   },
-  deleteUser: (req, res) => {
-    const userId = req.params.userId;
-    let userArray = userDatabase.filter((item) => item.id == userId);
-    if (userArray.length > 0) {
-      console.log(userArray);
-      userDatabase.splice(userDatabase.indexOf(userArray[0]), 1);
-      res.status(201).json({
-        status: 201,
-        result: `User with id ${userId} was deleted.`,
-      });
-    } else {
-      res.status(404).json({
-        status: 404,
-        result: `User with id ${userId} not found`,
-      });
-    }
+  deleteUser: (req, res, next) => {
+    const id = req.params.id;
+    dbconnection.getConnection(function (err, connection) {
+      if (err) throw err;
+
+      connection.query(
+        `SELECT * FROM user WHERE id=${id};`,
+        function (error, results, fields) {
+          if (error) throw error;
+
+          console.log('results = ', results.length);
+          if (results.length > 0) {
+            connection.query(
+              `DELETE FROM user WHERE id=${id};`,
+              function (error, results, fields) {
+                // console.log(error);
+                // console.log(error.sqlMessage);
+                if (error) {
+                  console.log(error.sqlMessage);
+                  const err = {
+                    status: 400,
+                    result: error.sqlMessage,
+                  };
+                  next(err);
+                } else {
+                  console.log('deleted');
+                  res.status(201).json({
+                    status: 201,
+                    result: `User with id ${id} was deleted.`,
+                  });
+                }
+              }
+            );
+
+            // dbconnection.end((err) => {
+            //   console.log("Pool was closed.");
+            // });
+          } else {
+            const err = {
+              status: 404,
+              result: `User with id ${id} not found`,
+            };
+            next(err);
+          }
+        }
+      );
+    });
   },
 };
