@@ -167,39 +167,55 @@ module.exports = {
   },
   getAllUsers: (req, res, next) => {
     console.log('getAllUsers called')
-    dbconnection.getConnection(function (err, connection) {
-      if (err) {
-        const conError = {
-          status: 500,
-          message: err.sqlMessage,
-        }
-        next(conError)
+
+    const { emailAdress, isActive } = req.query
+    console.log(`emailAdress = ${emailAdress} isActive = ${isActive}`)
+
+    let queryString = 'SELECT id, lastName FROM user'
+    if (emailAdress || isActive) {
+      queryString += ' WHERE '
+      if (emailAdress) {
+        queryString += "emailAdress='" + emailAdress + "'"
       }
+      if (emailAdress && isActive) queryString += ' AND '
+      if (isActive) {
+        queryString += 'isActive=' + 1
+      }
+      console.log(queryString)
+    }
+    queryString += ';'
 
-      connection.query(
-        'SELECT * FROM user;',
-        function (error, results, fields) {
-          connection.release()
+    dbconnection.getConnection(function (err, connection) {
+      // if (err) {
+      //   const conError = {
+      //     status: 500,
+      //     message: err.sqlMessage,
+      //   }
+      //   next(conError)
+      // }
+      if (err) next(err)
 
-          if (error) {
-            const err = {
-              status: 500,
-              message: error.sqlMessage,
-            }
-            next(err)
-          } else {
-            console.log('results = ', results.length)
-            res.status(200).json({
-              statusCode: 200,
-              result: results,
-            })
+      connection.query(queryString, function (error, results, fields) {
+        connection.release()
+
+        if (error) {
+          const err = {
+            status: 500,
+            message: error.sqlMessage,
           }
-
-          // dbconnection.end((err) => {
-          //   console.log("Pool was closed.");
-          // });
+          next(err)
+        } else {
+          console.log('results = ', results.length)
+          res.status(200).json({
+            statusCode: 200,
+            result: results,
+          })
         }
-      )
+
+        // dbconnection.end((err) => {
+        //   console.log("Pool was closed.");
+        // });
+      })
     })
   },
   getUserProfile: (req, res, next) => {

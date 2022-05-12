@@ -4,7 +4,8 @@ const app = express()
 require('dotenv').config()
 const port = process.env.PORT
 const bodyParser = require('body-parser')
-const userRouter = require('./src/routes/user.routes')
+const userRoutes = require('./src/routes/user.routes')
+const authRoutes = require('./src/routes/auth.routes')
 
 app.use(bodyParser.json())
 
@@ -21,8 +22,8 @@ app.get('/', (req, res) => {
   })
 })
 
-app.use(userRouter)
-// app.use('/api',userRouter) //can remove api from routes
+app.use('/api', userRoutes)
+app.use('/api', authRoutes)
 
 app.all('*', (req, res) => {
   res.status(404).json({
@@ -32,7 +33,12 @@ app.all('*', (req, res) => {
 })
 
 app.use((err, req, res, next) => {
-  res.status(err.status).json(err)
+  console.log('Error ' + err.toString())
+  res.status(500).json({
+    status: 500,
+    message: err.toString(),
+  })
+  // res.status(err.status).json(err)
 })
 
 app.listen(port, () => {

@@ -1,8 +1,9 @@
+process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb'
+
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../../index')
 
-process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb'
 require('dotenv').config()
 const dbconnection = require('../../database/dbconnection')
 
@@ -12,9 +13,9 @@ chai.use(chaiHttp)
 /**
  * Db queries to clear and fill the test database before each test.
  */
-const CLEAR_MEAL_TABLE = 'DELETE FROM meal;'
-const CLEAR_PARTICIPANTS_TABLE = 'DELETE FROM meal_participants_user;'
-const CLEAR_USERS_TABLE = 'DELETE FROM user;'
+const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM meal;'
+const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM meal_participants_user;'
+const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM user;'
 const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
 
 /**
@@ -36,7 +37,7 @@ const INSERT_MEALS =
   "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
 
 describe('Manage users', () => {
-  beforeEach((done) => {
+  before((done) => {
     dbconnection.getConnection(function (err, connection) {
       if (err) throw err
 
@@ -217,7 +218,7 @@ describe('Manage users', () => {
         })
     })
 
-    it.only('TC-201-5 If none of the above apply, a user should be succesfully added.', (done) => {
+    it('TC-201-5 If none of the above apply, a user should be succesfully added.', (done) => {
       chai
         .request(server)
         .post('/api/user')
@@ -270,6 +271,17 @@ describe('Manage users', () => {
     })
 
     it('TC-202-1 When all users are requested a database with 2 users should return 2 users', (done) => {
+      dbconnection.getConnection(function (err, connection) {
+        if (err) throw err
+
+        connection.query(CLEAR_USERS_TABLE, function (error, results, fields) {
+          if (error) throw error
+          connection.query(INSERT_USER, function (error, results, fields) {
+            if (error) throw error
+            connection.release()
+          })
+        })
+      })
       chai
         .request(server)
         .get('/api/user')
