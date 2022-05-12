@@ -107,7 +107,7 @@ module.exports = {
           '${user.city}'
           );`,
         function (error, results, fields) {
-          // connection.release()
+          connection.release()
 
           if (err) {
             const conError = {
@@ -259,6 +259,7 @@ module.exports = {
         `SELECT * FROM user WHERE id=?;`,
         [id],
         function (error, results, fields) {
+          connection.release()
           if (error) {
             const err = {
               status: 500,
@@ -377,6 +378,7 @@ module.exports = {
       connection.query(
         `SELECT * FROM user WHERE id=${id};`,
         function (error, results, fields) {
+          connection.release()
           if (error) {
             const err = {
               status: 500,
