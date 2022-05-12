@@ -91,7 +91,7 @@ module.exports = {
         next(conError)
       }
       let activeInt = 1
-      if (!user.isActive) activeInt = 0
+      if (!user.isActive.value) activeInt = 0
 
       connection.query(
         `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) 
@@ -117,33 +117,35 @@ module.exports = {
             next(conError)
           } else {
             console.log('email ', user.emailAdress)
-            connection.query(
-              `SELECT * FROM user WHERE emailAdress=?`,
-              [user.emailAdress],
-              function (error, results, fields) {
-                connection.release()
-                if (err) {
-                  console.log(err.sqlMessage)
-                  const conError = {
-                    status: 500,
-                    message: err.sqlMessage,
+            dbconnection.getConnection(function (err, connection) {
+              connection.query(
+                `SELECT * FROM user WHERE emailAdress=?`,
+                [user.emailAdress],
+                function (error, results, fields) {
+                  connection.release()
+                  if (err) {
+                    console.log(err.sqlMessage)
+                    const conError = {
+                      status: 500,
+                      message: err.sqlMessage,
+                    }
+                    next(conError)
+                  } else {
+                    console.log(results)
+                    let id = 0
+                    if (results.length > 0) id = results[0].id
+                    user = {
+                      id: id,
+                      ...user,
+                    }
+                    res.status(201).json({
+                      status: 201,
+                      result: user,
+                    })
                   }
-                  next(conError)
-                } else {
-                  console.log(results)
-                  let id = 0
-                  if (results.length > 0) id = results[0].id
-                  user = {
-                    id: id,
-                    ...user,
-                  }
-                  res.status(201).json({
-                    status: 201,
-                    result: user,
-                  })
                 }
-              }
-            )
+              )
+            })
           }
         }
       )
@@ -298,7 +300,7 @@ module.exports = {
               } else {
                 console.log(value)
                 let activeInt = 1
-                if (!value.isActive) activeInt = 0
+                if (!value.isActive.value) activeInt = 0
                 connection.query(
                   `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
                   [

@@ -217,7 +217,7 @@ describe('Manage users', () => {
         })
     })
 
-    it('TC-201-5 If none of the above apply, a user should be succesfully added.', (done) => {
+    it.only('TC-201-5 If none of the above apply, a user should be succesfully added.', (done) => {
       chai
         .request(server)
         .post('/api/user')
