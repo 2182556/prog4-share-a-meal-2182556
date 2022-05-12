@@ -357,7 +357,7 @@ describe('Manage users', () => {
           done()
         })
     })
-    it('TC-205-6 User succesfully updated', (done) => {
+    it.only('TC-205-6 User succesfully updated', (done) => {
       chai
         .request(server)
         .put('/api/user/1')

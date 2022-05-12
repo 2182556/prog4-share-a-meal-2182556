@@ -116,8 +116,9 @@ module.exports = {
             }
             next(conError)
           } else {
+            console.log('email ', user.emailAdress)
             connection.query(
-              'SELECT * FROM user WHERE emailAdress=?',
+              `SELECT * FROM user WHERE emailAdress=?`,
               [user.emailAdress],
               function (error, results, fields) {
                 connection.release()
@@ -255,7 +256,7 @@ module.exports = {
       }
 
       connection.query(
-        'SELECT * FROM user WHERE id=?;',
+        `SELECT * FROM user WHERE id=?;`,
         [id],
         function (error, results, fields) {
           if (error) {
@@ -298,7 +299,7 @@ module.exports = {
                 let activeInt = 1
                 if (!value.isActive) activeInt = 0
                 connection.query(
-                  'UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?',
+                  `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
                   [
                     value.firstName,
                     value.lastName,
@@ -337,6 +338,7 @@ module.exports = {
                         id: id,
                         ...value,
                       }
+                      console.log(user)
                       res.status(200).json({
                         status: 200,
                         result: user,
