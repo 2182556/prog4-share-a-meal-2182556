@@ -168,54 +168,115 @@ module.exports = {
   getAllUsers: (req, res, next) => {
     console.log('getAllUsers called')
 
-    const { emailAdress, isActive } = req.query
-    console.log(`emailAdress = ${emailAdress} isActive = ${isActive}`)
+    console.log(req.query)
 
+    let queryParams = []
     let queryString = 'SELECT id, lastName FROM user'
-    if (emailAdress || isActive) {
+    if (Object.keys(req.query).length > 0) {
       queryString += ' WHERE '
-      if (emailAdress) {
-        queryString += "emailAdress='" + emailAdress + "'"
+      i = 0
+      for (p in req.query) {
+        if (i > 0) queryString += ' AND '
+        queryString += `${p}=? `
+        queryParams.push(req.query[p])
+        console.log(p)
+        console.log(req.query[p])
+        i++
+
+        //... do something
       }
-      if (emailAdress && isActive) queryString += ' AND '
-      if (isActive) {
-        queryString += 'isActive=' + 1
-      }
-      console.log(queryString)
+
+      // const {
+      //   firstName,
+      //   lastName,
+      //   isActive,
+      //   emailAdress,
+      //   phoneNumber,
+      //   roles,
+      //   street,
+      //   city,
+      // } = req.query
+      // queryString += ' WHERE '
+      // i = 0
+      // if (firstName) {
+      //   queryString += 'firstName=?'
+      //   queryParams.push(firstName)
+      //   i++
+      // }
+      // if (lastName) {
+      //   if (i > 0) queryString += ' AND '
+      //   queryString += 'lastName=?'
+      //   queryParams.push(lastName)
+      //   i++
+      // }
+      // if (isActive) {
+      //   if (i > 0) queryString += ' AND '
+      //   queryString += 'isActive=?'
+      //   queryParams.push(isActive)
+      //   i++
+      // }
+      // if (emailAdress) {
+      //   if (i > 0) queryString += ' AND '
+      //   queryString += 'emailAdress=?'
+      //   queryParams.push(emailAdress)
+      //   i++
+      // }
+      // if (phoneNumber) {
+      //   if (i > 0) queryString += ' AND '
+      //   queryString += 'phoneNumber=?'
+      //   queryParams.push(phoneNumber)
+      //   i++
+      // }
+      // if (roles) {
+      //   if (i > 0) queryString += ' AND '
+      //   queryString += 'roles=?'
+      //   queryParams.push(roles)
+      //   i++
+      // }
+      // if (street) {
+      //   if (i > 0) queryString += ' AND '
+      //   queryString += 'street=?'
+      //   queryParams.push(street)
+      //   i++
+      // }
+      // if (city) {
+      //   if (i > 0) queryString += ' AND '
+      //   queryString += 'city=?'
+      //   queryParams.push(city)
+      // }
     }
     queryString += ';'
+    console.log(queryString)
+    console.log(queryParams)
 
     dbconnection.getConnection(function (err, connection) {
-      // if (err) {
-      //   const conError = {
-      //     status: 500,
-      //     message: err.sqlMessage,
-      //   }
-      //   next(conError)
-      // }
       if (err) next(err)
 
-      connection.query(queryString, function (error, results, fields) {
-        connection.release()
+      connection.query(
+        queryString,
+        queryParams,
+        function (error, results, fields) {
+          connection.release()
 
-        if (error) {
-          const err = {
-            status: 500,
-            message: error.sqlMessage,
+          if (error) {
+            const err = {
+              status: 500,
+              message: error.sqlMessage,
+            }
+            next(err)
+          } else {
+            console.log('results = ', results.length)
+            res.status(200).json({
+              statusCode: 200,
+              result: results,
+            })
           }
-          next(err)
-        } else {
-          console.log('results = ', results.length)
-          res.status(200).json({
-            statusCode: 200,
-            result: results,
-          })
-        }
 
-        // dbconnection.end((err) => {
-        //   console.log("Pool was closed.");
-        // });
-      })
+          // dbconnection.end((err) => {
+          //   console.log("Pool was closed.");
+          // });
+        }
+      )
     })
   },
   getUserProfile: (req, res, next) => {
