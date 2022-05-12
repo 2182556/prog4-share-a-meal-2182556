@@ -94,18 +94,30 @@ module.exports = {
       if (!user.isActive.value) activeInt = 0
 
       connection.query(
-        `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) 
-        VALUES(
-          '${user.firstName}',
-          '${user.lastName}',
-          '${user.isActive}',
-          '${user.emailAdress}',
-          '${user.password}', 
-          '${user.phoneNumber}',
-          '${user.roles}',
-          '${user.street}',
-          '${user.city}'
-          );`,
+        // `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city)
+        // VALUES(
+        //   '${user.firstName}',
+        //   '${user.lastName}',
+        //   '${user.isActive}',
+        //   '${user.emailAdress}',
+        //   '${user.password}',
+        //   '${user.phoneNumber}',
+        //   '${user.roles}',
+        //   '${user.street}',
+        //   '${user.city}'
+        //   );`,
+        'INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) VALUES(?,?,?,?,?,?,?,?,?);',
+        [
+          user.firstName,
+          user.lastName,
+          user.isActive,
+          user.emailAdress,
+          user.password,
+          user.phoneNumber,
+          user.roles,
+          user.street,
+          user.city,
+        ],
         function (error, results, fields) {
           connection.release()
 
@@ -117,35 +129,33 @@ module.exports = {
             next(conError)
           } else {
             console.log('email ', user.emailAdress)
-            dbconnection.getConnection(function (err, connection) {
-              connection.query(
-                `SELECT * FROM user WHERE emailAdress=?`,
-                [user.emailAdress],
-                function (error, results, fields) {
-                  connection.release()
-                  if (err) {
-                    console.log(err.sqlMessage)
-                    const conError = {
-                      status: 500,
-                      message: err.sqlMessage,
-                    }
-                    next(conError)
-                  } else {
-                    console.log(results)
-                    let id = 0
-                    if (results.length > 0) id = results[0].id
-                    user = {
-                      id: id,
-                      ...user,
-                    }
-                    res.status(201).json({
-                      status: 201,
-                      result: user,
-                    })
+            connection.query(
+              `SELECT * FROM user WHERE emailAdress=?`,
+              [user.emailAdress],
+              function (error, results, fields) {
+                connection.release()
+                if (err) {
+                  console.log(err.sqlMessage)
+                  const conError = {
+                    status: 500,
+                    message: err.sqlMessage,
                   }
+                  next(conError)
+                } else {
+                  console.log(results)
+                  let id = 0
+                  if (results.length > 0) id = results[0].id
+                  user = {
+                    id: id,
+                    ...user,
+                  }
+                  res.status(201).json({
+                    status: 201,
+                    result: user,
+                  })
                 }
-              )
-            })
+              }
+            )
           }
         }
       )
