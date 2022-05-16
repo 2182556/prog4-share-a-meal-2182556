@@ -18,19 +18,11 @@ const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM meal_participants_user;'
 const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM user;'
 const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
 
-/**
- * Voeg een user toe aan de database. Deze user heeft id 1.
- * Deze id kun je als foreign key gebruiken in de andere queries, bv insert studenthomes.
- */
 const INSERT_USER =
   'INSERT INTO user (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
   '(1, "first", "last", "email@adress.com", "secret", "street", "city"),' +
   '(2, "Davide", "Ambesi", "d.ambesi@avans.nl", "secret", "street", "city");'
 
-/**
- * Query om twee meals toe te voegen. Let op de UserId, die moet matchen
- * met de user die je ook toevoegt.
- */
 const INSERT_MEALS =
   'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES' +
   "(1, 'Meal A', 'description', 'image url', NOW(), 5, 6.50, 1)," +
@@ -369,6 +361,7 @@ describe('Manage users', () => {
           done()
         })
     })
+
     it('TC-205-6 User succesfully updated', (done) => {
       chai
         .request(server)
@@ -407,6 +400,7 @@ describe('Manage users', () => {
           done()
         })
     })
+
     it('TC-206-4 When a user is removed ', (done) => {
       chai
         .request(server)

@@ -33,12 +33,8 @@ app.all('*', (req, res) => {
 })
 
 app.use((err, req, res, next) => {
-  console.log('Error ' + err.toString())
-  res.status(500).json({
-    status: 500,
-    message: err.toString(),
-  })
-  // res.status(err.status).json(err)
+  console.log('Error: ' + err.message)
+  res.status(err.status).json(err)
 })
 
 app.listen(port, () => {

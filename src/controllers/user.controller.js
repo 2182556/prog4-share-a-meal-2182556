@@ -61,11 +61,10 @@ module.exports = {
               var user = Object.assign({}, results[0])
               if (results.length > 0 && user.id != req.params.id) {
                 console.log(user.id)
-                const err = {
+                res.status(409).json({
                   status: 409,
                   message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
-                }
-                next(err)
+                })
               } else {
                 next()
               }
@@ -94,18 +93,6 @@ module.exports = {
       if (!user.isActive.value) activeInt = 0
 
       connection.query(
-        // `INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city)
-        // VALUES(
-        //   '${user.firstName}',
-        //   '${user.lastName}',
-        //   '${user.isActive}',
-        //   '${user.emailAdress}',
-        //   '${user.password}',
-        //   '${user.phoneNumber}',
-        //   '${user.roles}',
-        //   '${user.street}',
-        //   '${user.city}'
-        //   );`,
         'INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) VALUES(?,?,?,?,?,?,?,?,?);',
         [
           user.firstName,
@@ -121,10 +108,10 @@ module.exports = {
         function (error, results, fields) {
           connection.release()
 
-          if (err) {
+          if (error) {
             const conError = {
               status: 500,
-              message: err.sqlMessage,
+              message: error.sqlMessage,
             }
             next(conError)
           } else {
@@ -134,11 +121,11 @@ module.exports = {
               [user.emailAdress],
               function (error, results, fields) {
                 connection.release()
-                if (err) {
+                if (error) {
                   console.log(err.sqlMessage)
                   const conError = {
                     status: 500,
-                    message: err.sqlMessage,
+                    message: error.sqlMessage,
                   }
                   next(conError)
                 } else {
@@ -169,85 +156,33 @@ module.exports = {
     console.log('getAllUsers called')
 
     console.log(req.query)
-
-    let queryParams = []
+    let allowedParams = [
+      'firstName',
+      'lastName',
+      'isActive',
+      'emailAdress',
+      'phoneNumber',
+      'roles',
+      'street',
+      'city',
+    ]
     let queryString = 'SELECT id, lastName FROM user'
+    let queryParams = []
     if (Object.keys(req.query).length > 0) {
       queryString += ' WHERE '
       i = 0
       for (p in req.query) {
-        if (i > 0) queryString += ' AND '
-        queryString += `${p}=? `
-        queryParams.push(req.query[p])
-        console.log(p)
-        console.log(req.query[p])
-        i++
-
-        //... do something
+        if (allowedParams.includes(p)) {
+          if (i > 0) queryString += ' AND '
+          queryString += `${p}=?`
+          queryParams.push(req.query[p])
+          i++
+        }
       }
-
-      // const {
-      //   firstName,
-      //   lastName,
-      //   isActive,
-      //   emailAdress,
-      //   phoneNumber,
-      //   roles,
-      //   street,
-      //   city,
-      // } = req.query
-      // queryString += ' WHERE '
-      // i = 0
-      // if (firstName) {
-      //   queryString += 'firstName=?'
-      //   queryParams.push(firstName)
-      //   i++
-      // }
-      // if (lastName) {
-      //   if (i > 0) queryString += ' AND '
-      //   queryString += 'lastName=?'
-      //   queryParams.push(lastName)
-      //   i++
-      // }
-      // if (isActive) {
-      //   if (i > 0) queryString += ' AND '
-      //   queryString += 'isActive=?'
-      //   queryParams.push(isActive)
-      //   i++
-      // }
-      // if (emailAdress) {
-      //   if (i > 0) queryString += ' AND '
-      //   queryString += 'emailAdress=?'
-      //   queryParams.push(emailAdress)
-      //   i++
-      // }
-      // if (phoneNumber) {
-      //   if (i > 0) queryString += ' AND '
-      //   queryString += 'phoneNumber=?'
-      //   queryParams.push(phoneNumber)
-      //   i++
-      // }
-      // if (roles) {
-      //   if (i > 0) queryString += ' AND '
-      //   queryString += 'roles=?'
-      //   queryParams.push(roles)
-      //   i++
-      // }
-      // if (street) {
-      //   if (i > 0) queryString += ' AND '
-      //   queryString += 'street=?'
-      //   queryParams.push(street)
-      //   i++
-      // }
-      // if (city) {
-      //   if (i > 0) queryString += ' AND '
-      //   queryString += 'city=?'
-      //   queryParams.push(city)
-      // }
     }
     queryString += ';'
-    console.log(queryString)
-    console.log(queryParams)
+    // console.log(queryString)
+    // console.log(queryParams)
 
     dbconnection.getConnection(function (err, connection) {
       if (err) next(err)
