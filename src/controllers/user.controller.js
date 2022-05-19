@@ -462,7 +462,7 @@ module.exports = {
     })
   },
   //for debugging only
-  deleteAll: (res, req, next) => {
+  deleteAll: (req, res, next) => {
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
@@ -482,17 +482,17 @@ module.exports = {
               message: error.sqlMessage,
             }
             next(err)
-            // } else {
-            //   // res.status(200).json({
-            //   //   status: 200,
-            //   //   message: `OK`,
-            //   // })
+          } else {
+            res.status(200).json({
+              status: 200,
+              message: `OK`,
+            })
           }
         }
       )
     })
   },
-  addAll: (res, req, next) => {
+  addAll: (req, res, next) => {
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
@@ -518,11 +518,11 @@ module.exports = {
               message: error.sqlMessage,
             }
             next(err)
-            // } else {
-            //   res.status(200).json({
-            //     status: 200,
-            //     message: 'OK',
-            //   })
+          } else {
+            res.status(200).json({
+              status: 200,
+              message: 'OK',
+            })
           }
         }
       )
