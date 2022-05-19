@@ -473,7 +473,7 @@ module.exports = {
       }
 
       connection.query(
-        `DELETE IGNORE FROM user;`,
+        'DELETE IGNORE FROM user;',
         function (error, results, fields) {
           connection.release()
           if (error) {
