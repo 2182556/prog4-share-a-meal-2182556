@@ -462,67 +462,67 @@ module.exports = {
     })
   },
   //for debugging only
-  deleteAll: (req, res, next) => {
-    dbconnection.getConnection(function (err, connection) {
-      if (err) {
-        const conError = {
-          status: 500,
-          message: err.sqlMessage,
-        }
-        next(conError)
-      }
+  // deleteAll: (req, res, next) => {
+  //   dbconnection.getConnection(function (err, connection) {
+  //     if (err) {
+  //       const conError = {
+  //         status: 500,
+  //         message: err.sqlMessage,
+  //       }
+  //       next(conError)
+  //     }
 
-      connection.query(
-        'DELETE IGNORE FROM user;',
-        function (error, results, fields) {
-          connection.release()
-          if (error) {
-            const err = {
-              status: 500,
-              message: error.sqlMessage,
-            }
-            next(err)
-          } else {
-            res.status(200).json({
-              status: 200,
-              message: `OK`,
-            })
-          }
-        }
-      )
-    })
-  },
-  addAll: (req, res, next) => {
-    dbconnection.getConnection(function (err, connection) {
-      if (err) {
-        const conError = {
-          status: 500,
-          message: err.sqlMessage,
-        }
-        next(conError)
-      }
+  //     connection.query(
+  //       'DELETE IGNORE FROM user;',
+  //       function (error, results, fields) {
+  //         connection.release()
+  //         if (error) {
+  //           const err = {
+  //             status: 500,
+  //             message: error.sqlMessage,
+  //           }
+  //           next(err)
+  //         } else {
+  //           res.status(200).json({
+  //             status: 200,
+  //             message: `OK`,
+  //           })
+  //         }
+  //       }
+  //     )
+  //   })
+  // },
+  // addAll: (req, res, next) => {
+  //   dbconnection.getConnection(function (err, connection) {
+  //     if (err) {
+  //       const conError = {
+  //         status: 500,
+  //         message: err.sqlMessage,
+  //       }
+  //       next(conError)
+  //     }
 
-      connection.query(
-        'INSERT INTO `user` ( `firstName`, `lastName`,`isActive`, `emailAdress`, `password`, `phoneNumber`, `roles`, `street`, `city` ) VALUES' +
-          "('Marieke','Van Dam',false,'m.vandam@server.nl','Secret11','06-12345678','editor,guest','','')," +
-          "('Henk','Tank',true,'h.tank@server.com','Secret11','06 12425495','editor,guest','','')," +
-          "('Davide','Ambesi',true,'d.ambesi@avans.nl','Secret11','','editor,guest','','');",
-        function (error, results, fields) {
-          connection.release()
-          if (error) {
-            const err = {
-              status: 500,
-              message: error.sqlMessage,
-            }
-            next(err)
-          } else {
-            res.status(200).json({
-              status: 200,
-              message: 'OK',
-            })
-          }
-        }
-      )
-    })
-  },
+  //     connection.query(
+  //       'INSERT INTO `user` ( `firstName`, `lastName`,`isActive`, `emailAdress`, `password`, `phoneNumber`, `roles`, `street`, `city` ) VALUES' +
+  //         "('Marieke','Van Dam',false,'m.vandam@server.nl','Secret11','06-12345678','editor,guest','','')," +
+  //         "('Henk','Tank',true,'h.tank@server.com','Secret11','06 12425495','editor,guest','','')," +
+  //         "('Davide','Ambesi',true,'d.ambesi@avans.nl','Secret11','','editor,guest','','');",
+  //       function (error, results, fields) {
+  //         connection.release()
+  //         if (error) {
+  //           const err = {
+  //             status: 500,
+  //             message: error.sqlMessage,
+  //           }
+  //           next(err)
+  //         } else {
+  //           res.status(200).json({
+  //             status: 200,
+  //             message: 'OK',
+  //           })
+  //         }
+  //       }
+  //     )
+  //   })
+  // },
 }
