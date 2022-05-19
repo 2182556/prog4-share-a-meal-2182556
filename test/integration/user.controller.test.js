@@ -3,12 +3,16 @@ process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb'
 const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../../index')
+const jwt = require('jsonwebtoken')
+const { jwtPrivateKey, logger } = require('../../src/config/config')
 
 require('dotenv').config()
 const dbconnection = require('../../database/dbconnection')
 
 chai.should()
 chai.use(chaiHttp)
+
+let token = 0
 
 /**
  * Db queries to clear and fill the test database before each test.
@@ -20,8 +24,8 @@ const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
 
 const INSERT_USER =
   'INSERT INTO user (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
-  '(1, "first", "last", "email@adress.com", "secret", "street", "city"),' +
-  '(2, "Davide", "Ambesi", "d.ambesi@avans.nl", "secret", "street", "city");'
+  '(1, "first", "last", "email@adress.com", "Secret11", "street", "city"),' +
+  '(2, "Davide", "Ambesi", "d.ambesi@avans.nl", "Secret11", "street", "city");'
 
 const INSERT_MEALS =
   'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES' +
@@ -42,6 +46,7 @@ describe('Manage users', () => {
         })
       })
     })
+    token = jwt.sign({ id: 1 }, jwtPrivateKey)
   })
   //Use case 201
   describe('UC-201 Register /api/user', () => {
@@ -56,7 +61,7 @@ describe('Manage users', () => {
           street: 'Lovensdijkstraat 61',
           city: 'Breda',
           isActive: true,
-          password: 'secret',
+          password: 'Secret11',
           phoneNumber: '0612345678',
           roles: 'editor,guest',
         })
@@ -76,7 +81,7 @@ describe('Manage users', () => {
           street: 'Lovensdijkstraat 61',
           city: 'Breda',
           isActive: true,
-          password: 'secret',
+          password: 'Secret11',
           emailAdress: '2182556@avans.nl',
           phoneNumber: '0612345678',
           roles: 'editor,guest',
@@ -96,7 +101,7 @@ describe('Manage users', () => {
           street: 'Lovensdijkstraat 61',
           city: 'Breda',
           isActive: true,
-          password: 'secret',
+          password: 'Secret11',
           emailAdress: '2182556@avans.nl',
           phoneNumber: '0612345678',
           roles: 'editor,guest',
@@ -142,7 +147,7 @@ describe('Manage users', () => {
           street: 'Lovensdijkstraat 61',
           city: 'Breda',
           isActive: true,
-          password: 'secret',
+          password: 'Secret11',
           phoneNumber: '0612345678',
           roles: 'editor,guest',
         })
@@ -165,7 +170,7 @@ describe('Manage users', () => {
           street: 'Lovensdijkstraat 61',
           city: 'Breda',
           isActive: true,
-          password: 'secret',
+          password: 'Secret11',
           phoneNumber: '0612345678',
           roles: 'editor,guest',
         })
@@ -193,7 +198,7 @@ describe('Manage users', () => {
           street: 'Lovensdijkstraat 61',
           city: 'Breda',
           isActive: true,
-          password: 'secret',
+          password: 'Secret11',
           phoneNumber: '0612345678',
           roles: 'editor,guest',
         })
@@ -222,7 +227,7 @@ describe('Manage users', () => {
           street: 'Lovensdijkstraat 61',
           city: 'Breda',
           isActive: true,
-          password: 'secret',
+          password: 'Secret11',
           phoneNumber: '0612345678',
           roles: 'editor,guest',
         })
@@ -254,6 +259,7 @@ describe('Manage users', () => {
       chai
         .request(server)
         .get('/api/user')
+        .set('authorization', 'Bearer ' + token)
         .end((err, res) => {
           let { statusCode, result } = res.body
           statusCode.should.equal(200)
@@ -277,6 +283,7 @@ describe('Manage users', () => {
       chai
         .request(server)
         .get('/api/user')
+        .set('authorization', 'Bearer ' + token)
         .end((err, res) => {
           let { statusCode, result } = res.body
           statusCode.should.equal(200)
@@ -298,6 +305,7 @@ describe('Manage users', () => {
       chai
         .request(server)
         .get('/api/user/1111')
+        .set('authorization', 'Bearer ' + token)
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
@@ -313,6 +321,7 @@ describe('Manage users', () => {
       chai
         .request(server)
         .get('/api/user/1')
+        .set('authorization', 'Bearer ' + token)
         .end((err, res) => {
           res.should.be.an('object')
           let { status, result } = res.body
@@ -328,6 +337,7 @@ describe('Manage users', () => {
       chai
         .request(server)
         .put('/api/user/1')
+        .set('authorization', 'Bearer ' + token)
         .send({
           //email is missing
           firstName: 'Assertion',
@@ -335,7 +345,7 @@ describe('Manage users', () => {
           street: 'Lovensdijkstraat 61',
           city: 'Breda',
           isActive: true,
-          password: 'secret',
+          password: 'Secret11',
           phoneNumber: '0612345678',
           roles: 'editor,guest',
         })
@@ -353,6 +363,7 @@ describe('Manage users', () => {
       chai
         .request(server)
         .put('/api/user/1111')
+        .set('authorization', 'Bearer ' + token)
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
@@ -366,6 +377,7 @@ describe('Manage users', () => {
       chai
         .request(server)
         .put('/api/user/1')
+        .set('authorization', 'Bearer ' + token)
         .send({
           emailAdress: 'anyemail@gmail.com',
           firstName: 'Assertion',
@@ -373,7 +385,7 @@ describe('Manage users', () => {
           street: 'Lovensdijkstraat 61',
           city: 'Breda',
           isActive: true,
-          password: 'secret',
+          password: 'Secret11',
           phoneNumber: '0612345678',
           roles: 'editor,guest',
         })
@@ -391,6 +403,7 @@ describe('Manage users', () => {
       chai
         .request(server)
         .delete('/api/user/1111')
+        .set('authorization', 'Bearer ' + token)
         .end((err, res) => {
           // res.should.be.an('');
           let { status, message } = res.body
@@ -405,6 +418,7 @@ describe('Manage users', () => {
       chai
         .request(server)
         .delete('/api/user/1')
+        .set('authorization', 'Bearer ' + token)
         .end((err, res) => {
           // res.should.be.an('');
           let { status, result } = res.body

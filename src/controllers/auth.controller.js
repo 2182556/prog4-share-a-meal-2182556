@@ -1,29 +1,24 @@
 const dbconnection = require('../../database/dbconnection')
-// const assert = require('assert')
 const Joi = require('joi')
 const jwt = require('jsonwebtoken')
+const logger = require('../config/config').logger
+const jwtPrivateKey = require('../config/config').jwtPrivateKey
 
-const userSchema = Joi.object({
-  emailAdress: Joi.string().required().email({
-    minDomainSegments: 2,
-  }),
-  password: Joi.string().required(),
+const loginSchema = Joi.object({
+  emailAdress: Joi.string().required().email(),
+  password: Joi.string()
+    .required()
+    .pattern(
+      new RegExp('(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$')
+    ),
 })
 
 module.exports = {
   login: (req, res, next) => {
-    console.log('login called')
+    logger.info('login called')
 
-    const { emailAdress, password } = userSchema.validate(req.body)
-    console.log(value)
-    if (error) {
-      console.log(error.message)
-      const err = {
-        status: 400,
-        message: error.message,
-      }
-      next(err)
-    }
+    const { error, value } = loginSchema.validate(req.body)
+    logger.debug(value.emailAdress)
 
     const queryString =
       'SELECT id, firstName, lastName, password FROM user WHERE emailAdress=?'
@@ -33,26 +28,27 @@ module.exports = {
 
       connection.query(
         queryString,
-        [emailAdress],
+        [value.emailAdress],
         function (error, results, fields) {
           connection.release()
 
           if (error) next(error)
 
+          logger.debug(results)
+
           if (results && results.length == 1) {
-            if (password == results[0].password) {
-              //get token :)
-              console.log('results = ', results)
+            if (value.password == results[0].password) {
+              logger.info('results login = ', results)
               const { password, ...userinfo } = results[0]
               const payload = { id: userinfo.id }
               jwt.sign(
                 payload,
-                process.env.JWT_SECRET_PRIVATE_KEY,
+                jwtPrivateKey,
                 { expiresIn: '25d' },
                 function (err, token) {
-                  if (err) console.log(err)
+                  if (err) logger.error(err)
                   if (token) {
-                    console.log(token)
+                    logger.info('User logged in, sending ', userinfo)
                     res.status(200).json({
                       statusCode: 200,
                       result: { ...userinfo, token },
@@ -77,21 +73,21 @@ module.exports = {
     })
   },
   validateToken(req, res, next) {
-    console.log('validateToken called')
+    logger.info('validateToken called')
     // logger.trace(req.headers)
     // The headers should contain the authorization-field with value 'Bearer [token]'
     const authHeader = req.headers.authorization
     if (!authHeader) {
-      logger.warn('Authorization header missing!')
+      logger.warn('Authorization header missing')
       res.status(401).json({
-        error: 'Authorization header missing!',
+        error: 'Authorization header missing',
         datetime: new Date().toISOString(),
       })
     } else {
       // Strip the word 'Bearer ' from the headervalue
       const token = authHeader.substring(7, authHeader.length)
 
-      jwt.verify(token, process.env.JWT_SECRET_PRIVATE_KEY, (err, payload) => {
+      jwt.verify(token, jwtPrivateKey, (err, payload) => {
         if (err) {
           logger.warn('Not authorized')
           res.status(401).json({

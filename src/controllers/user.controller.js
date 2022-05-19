@@ -1,37 +1,46 @@
 const dbconnection = require('../../database/dbconnection')
 // const assert = require('assert')
 const Joi = require('joi')
+const { logger } = require('../config/config')
 
 const userSchema = Joi.object({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
-  emailAdress: Joi.string().required().email({
-    minDomainSegments: 2,
-  }),
+  emailAdress: Joi.string()
+    .required()
+    .email()
+    .pattern(new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')),
   street: Joi.string().required().default(''),
-  city: Joi.string().required().default(1),
-  isActive: Joi.boolean().required().default(1),
-  password: Joi.string().required(),
+  city: Joi.string().required().default(''),
+  isActive: Joi.boolean().required().default('true'),
+  password: Joi.string()
+    .required()
+    .pattern(
+      new RegExp('(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$')
+    ),
   phoneNumber: Joi.string().required().default(''),
   roles: Joi.string().default('editor,guest'),
 })
 
 module.exports = {
   validateUser: (req, res, next) => {
-    console.log('Validating input')
+    logger.info('validateUser called')
     let user = req.body
 
     const { error, value } = userSchema.validate(req.body)
-    console.log(value)
     if (error == undefined) {
       next()
     } else {
-      console.log(error.message)
-      const err = {
+      logger.error(error.message)
+      res.status(400).json({
         status: 400,
         message: error.message,
-      }
-      next(err)
+      })
+      // const err = {
+      //   status: 400,
+      //   message: error.message,
+      // }
+      // next(err)
     }
   },
   checkUniqueEmail: (req, res, next) => {
@@ -337,18 +346,6 @@ module.exports = {
                     value.city,
                     id,
                   ],
-                  //   connection.query(
-                  //     `UPDATE user SET
-                  // firstName='${value.firstName}',
-                  // lastName='${value.lastName}',
-                  // isActive='${activeInt}',
-                  // emailAdress='${value.emailAdress}',
-                  // password='${value.password}',
-                  // phoneNumber='${value.phoneNumber}',
-                  // roles='${value.roles}',
-                  // street='${value.street}',
-                  // city='${value.city}'
-                  // WHERE id=${id};`,
                   function (error, results, fields) {
                     connection.release()
 

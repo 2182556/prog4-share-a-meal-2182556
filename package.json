@@ -30,7 +30,8 @@
     "express": "^4.17.3",
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
-    "mysql2": "^2.3.3"
+    "mysql2": "^2.3.3",
+    "tracer": "^1.1.5"
   },
   "prettier": {
     "trailingComma": "es5",
