@@ -482,11 +482,11 @@ module.exports = {
               message: error.sqlMessage,
             }
             next(err)
-          } else {
-            res.status(200).json({
-              status: 200,
-              message: `OK`,
-            })
+            // } else {
+            //   // res.status(200).json({
+            //   //   status: 200,
+            //   //   message: `OK`,
+            //   // })
           }
         }
       )
@@ -518,11 +518,11 @@ module.exports = {
               message: error.sqlMessage,
             }
             next(err)
-          } else {
-            res.status(200).json({
-              status: 200,
-              message: 'OK',
-            })
+            // } else {
+            //   res.status(200).json({
+            //     status: 200,
+            //     message: 'OK',
+            //   })
           }
         }
       )
