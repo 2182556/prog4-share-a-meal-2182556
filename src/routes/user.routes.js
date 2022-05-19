@@ -3,12 +3,7 @@ const router = express.Router()
 const userController = require('../controllers/user.controller')
 const authController = require('../controllers/auth.controller')
 
-router.post(
-  '/user',
-  userController.validateUser,
-  userController.checkUniqueEmail,
-  userController.addUser
-)
+router.post('/user', userController.validateUser, userController.addUser)
 
 router.get('/user', authController.validateToken, userController.getAllUsers)
 
@@ -24,12 +19,7 @@ router.get(
   userController.getUserById
 )
 
-router.put(
-  '/user/:id',
-  authController.validateToken,
-  userController.checkUniqueEmail,
-  userController.updateUser
-)
+router.put('/user/:id', authController.validateToken, userController.updateUser)
 
 router.delete(
   '/user/:id',

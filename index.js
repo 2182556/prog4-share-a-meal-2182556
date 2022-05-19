@@ -34,6 +34,7 @@ app.all('*', (req, res) => {
 
 app.use((err, req, res, next) => {
   res.status(err.status).json(err)
+  //change to 500?
 })
 
 app.listen(port, () => {

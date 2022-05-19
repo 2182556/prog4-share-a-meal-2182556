@@ -18,7 +18,7 @@ const userSchema = Joi.object({
     .pattern(
       new RegExp('(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$')
     ),
-  phoneNumber: Joi.string().required().default(''),
+  phoneNumber: Joi.string().phoneNumber().required().default(''),
   roles: Joi.string().default('editor,guest'),
 })
 
@@ -43,9 +43,9 @@ module.exports = {
       // next(err)
     }
   },
-  checkUniqueEmail: (req, res, next) => {
+  checkUniqueEmail: (id, emailAdress) => {
     console.log('Checking if email is unique')
-    if (req.body.emailAdress != undefined) {
+    if (emailAdress != undefined) {
       dbconnection.getConnection(function (err, connection) {
         if (err) {
           const conError = {
@@ -56,7 +56,7 @@ module.exports = {
         }
 
         connection.query(
-          `SELECT * FROM user WHERE emailAdress='${req.body.emailAdress}';`,
+          `SELECT * FROM user WHERE emailAdress='${emailAdress}';`,
           function (error, results, fields) {
             connection.release()
 
@@ -68,14 +68,12 @@ module.exports = {
               next(err)
             } else {
               var user = Object.assign({}, results[0])
-              if (results.length > 0 && user.id != req.params.id) {
+              if (results.length > 0 && user.id != id) {
                 console.log(user.id)
                 res.status(409).json({
                   status: 409,
-                  message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
+                  message: `The email address ${emailAdress} is already in use, please use a different emailaddress.`,
                 })
-              } else {
-                next()
               }
             }
           }
@@ -90,6 +88,7 @@ module.exports = {
     console.log('addUser called')
     console.log(value)
     let user = value
+    this.checkUniqueEmail(0, value.emailAdress)
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
@@ -175,11 +174,11 @@ module.exports = {
       'street',
       'city',
     ]
-    let queryString = 'SELECT id, lastName FROM user'
+    let queryString = 'SELECT id, firstName, lastName FROM user'
     let queryParams = []
     if (Object.keys(req.query).length > 0) {
       queryString += ' WHERE '
-      i = 0
+      let i = 0
       for (p in req.query) {
         if (allowedParams.includes(p)) {
           if (i > 0) queryString += ' AND '
@@ -190,8 +189,8 @@ module.exports = {
       }
     }
     queryString += ';'
-    // console.log(queryString)
-    // console.log(queryParams)
+    console.log(queryString)
+    console.log(queryParams)
 
     dbconnection.getConnection(function (err, connection) {
       if (err) next(err)
@@ -329,6 +328,9 @@ module.exports = {
                 }
                 next(err)
               } else {
+                if (user.emailAdress != value.emailAdress) {
+                  checkUniqueEmail(user.id, value.emailAdress)
+                }
                 console.log(value)
                 let activeInt = 1
                 if (!value.isActive.value) activeInt = 0
@@ -387,67 +389,74 @@ module.exports = {
   },
   deleteUser: (req, res, next) => {
     const id = req.params.id
-    dbconnection.getConnection(function (err, connection) {
-      if (err) {
-        const conError = {
-          status: 500,
-          message: err.sqlMessage,
+    if (id == req.params.userId) {
+      dbconnection.getConnection(function (err, connection) {
+        if (err) {
+          const conError = {
+            status: 500,
+            message: err.sqlMessage,
+          }
+          next(conError)
         }
-        next(conError)
-      }
 
-      connection.query(
-        `SELECT * FROM user WHERE id=${id};`,
-        function (error, results, fields) {
-          connection.release()
-          if (error) {
-            const err = {
-              status: 500,
-              message: error.sqlMessage,
-            }
-            next(err)
-          } else {
-            console.log('results = ', results.length)
-            if (results.length > 0) {
-              connection.query(
-                `DELETE FROM user WHERE id=${id};`,
-                function (error, results, fields) {
-                  // console.log(error);
-                  // console.log(error.sqlMessage);
-                  if (error) {
-                    console.log(error.sqlMessage)
-                    const err = {
-                      status: 500,
-                      message: error.sqlMessage,
-                    }
-                    next(err)
-                  } else {
-                    console.log('deleted')
-                    res.status(200).json({
-                      status: 200,
-                      message: `User with id ${id} was deleted.`,
-                    })
-                  }
-                }
-              )
-
-              // dbconnection.end((err) => {
-              //   console.log("Pool was closed.");
-              // });
-            } else {
-              // res.status(400).json({
-              //   status: 400,
-              //   result: `User does not exist`,
-              // })
+        connection.query(
+          `SELECT * FROM user WHERE id=${id};`,
+          function (error, results, fields) {
+            connection.release()
+            if (error) {
               const err = {
-                status: 400,
-                message: `User does not exist`,
+                status: 500,
+                message: error.sqlMessage,
               }
               next(err)
+            } else {
+              console.log('results = ', results.length)
+              if (results.length > 0) {
+                connection.query(
+                  `DELETE FROM user WHERE id=${id};`,
+                  function (error, results, fields) {
+                    // console.log(error);
+                    // console.log(error.sqlMessage);
+                    if (error) {
+                      console.log(error.sqlMessage)
+                      const err = {
+                        status: 500,
+                        message: error.sqlMessage,
+                      }
+                      next(err)
+                    } else {
+                      console.log('deleted')
+                      res.status(200).json({
+                        status: 200,
+                        message: `User with id ${id} was deleted.`,
+                      })
+                    }
+                  }
+                )
+
+                // dbconnection.end((err) => {
+                //   console.log("Pool was closed.");
+                // });
+              } else {
+                res.status(400).json({
+                  status: 400,
+                  message: `User does not exist`,
+                })
+                // const err = {
+                //   status: 400,
+                //   message: `User does not exist`,
+                // }
+                // next(err)
+              }
             }
           }
-        }
-      )
-    })
+        )
+      })
+    } else {
+      res.status(403).json({
+        status: 403,
+        message: `You are not authorized to remove this user`,
+      })
+    }
   },
 }

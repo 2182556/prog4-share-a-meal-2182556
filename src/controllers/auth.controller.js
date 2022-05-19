@@ -20,8 +20,14 @@ module.exports = {
     const { error, value } = loginSchema.validate(req.body)
     logger.debug(value.emailAdress)
 
-    const queryString =
-      'SELECT id, firstName, lastName, password FROM user WHERE emailAdress=?'
+    if (error) {
+      res.status(400).json({
+        statusCode: 400,
+        message: error.message,
+      })
+    }
+
+    const queryString = 'SELECT * FROM user WHERE emailAdress=?'
 
     dbconnection.getConnection(function (err, connection) {
       if (err) next(err)
@@ -80,8 +86,8 @@ module.exports = {
     if (!authHeader) {
       logger.warn('Authorization header missing')
       res.status(401).json({
-        error: 'Authorization header missing',
-        datetime: new Date().toISOString(),
+        status: 401,
+        message: 'Authorization header missing',
       })
     } else {
       // Strip the word 'Bearer ' from the headervalue
@@ -91,8 +97,8 @@ module.exports = {
         if (err) {
           logger.warn('Not authorized')
           res.status(401).json({
-            error: 'Not authorized',
-            datetime: new Date().toISOString(),
+            status: 401,
+            message: 'Not authorized',
           })
         }
         if (payload) {
