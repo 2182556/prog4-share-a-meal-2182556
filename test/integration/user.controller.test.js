@@ -429,4 +429,23 @@ describe('Manage users', () => {
         })
     })
   })
+  describe('UC-101 Login /api/auth/login', () => {
+    it.only('TC-101-5 User succesfully logged in', (done) => {
+      chai
+        .request(server)
+        .post('/api/auth/login')
+        .send({
+          emailAdress: 'email@adress.com',
+          password: 'Secret11',
+        })
+        .end((err, res) => {
+          // res.should.be.an('');
+          let { status, message } = res.body
+          console.log(status)
+          status.should.equal(200)
+          // result.should.be.a('string').that.equals('');
+          done()
+        })
+    })
+  })
 })

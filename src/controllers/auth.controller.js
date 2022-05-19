@@ -45,7 +45,6 @@ module.exports = {
 
           if (results && results.length == 1) {
             if (value.password == results[0].password) {
-              logger.info('results login = ', results)
               const { password, ...userinfo } = results[0]
               const payload = { id: userinfo.id }
               jwt.sign(
@@ -57,7 +56,7 @@ module.exports = {
                   if (token) {
                     logger.info('User logged in, sending ', userinfo)
                     res.status(200).json({
-                      statusCode: 200,
+                      status: 200,
                       result: { ...userinfo, token },
                     })
                   }
