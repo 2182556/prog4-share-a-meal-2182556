@@ -37,8 +37,8 @@ router.delete(
   userController.deleteUser
 )
 
-router.delete('/user/all', userController.deleteAll)
+router.delete('/userall', userController.deleteAll)
 
-router.post('/user/all', userController.addAll)
+router.post('/userall', userController.addAll)
 
 module.exports = router
