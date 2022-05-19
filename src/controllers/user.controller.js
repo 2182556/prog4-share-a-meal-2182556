@@ -503,13 +503,13 @@ module.exports = {
       }
 
       connection.query(
-        'INSERT INTO `user` VALUES' +
-          "(1,'Mariëtte','van den Dullemen',true,'m.vandullemen@server.nl','Secret11','','','','')," +
-          "(2,'John','Doe',true,'j.doe@server.com','Secret11','06 12425475','editor,guest','','')," +
-          "(3,'Herman','Huizinga',true,'h.huizinga@server.nl','Secret11','06-12345678','editor,guest','','')," +
-          "(4,'Marieke','Van Dam',false,'m.vandam@server.nl','Secret11','06-12345678','editor,guest','','')," +
-          "(5,'Henk','Tank',true,'h.tank@server.com','Secret11','06 12425495','editor,guest','','')," +
-          "(6,'Davide','Ambesi',true,'d.ambesi@avans.nl','Secret11','','editor,guest','','');",
+        'INSERT INTO `user` ( `firstName`, `lastName`,`isActive`, `emailAdress`, `password`, `phoneNumber`, `roles`, `street`, `city` ) VALUES' +
+          "('Mariëtte','van den Dullemen',true,'m.vandullemen@server.nl','Secret11','','','','')," +
+          "('John','Doe',true,'j.doe@server.com','Secret11','06 12425475','editor,guest','','')," +
+          "('Herman','Huizinga',true,'h.huizinga@server.nl','Secret11','06-12345678','editor,guest','','')," +
+          "('Marieke','Van Dam',false,'m.vandam@server.nl','Secret11','06-12345678','editor,guest','','')," +
+          "('Henk','Tank',true,'h.tank@server.com','Secret11','06 12425495','editor,guest','','')," +
+          "('Davide','Ambesi',true,'d.ambesi@avans.nl','Secret11','','editor,guest','','');",
         function (error, results, fields) {
           connection.release()
           if (error) {
