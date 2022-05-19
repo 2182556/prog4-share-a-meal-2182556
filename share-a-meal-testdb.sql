@@ -106,7 +106,7 @@ CREATE TABLE `user` (
   `id` int NOT NULL AUTO_INCREMENT,
   `firstName` varchar(255) NOT NULL,
   `lastName` varchar(255) NOT NULL,
-  `isActive` tinyint NOT NULL DEFAULT '1',
+  `isActive` BOOLEAN NOT NULL DEFAULT true,
   `emailAdress` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `phoneNumber` varchar(255) DEFAULT '-',

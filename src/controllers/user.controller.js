@@ -103,8 +103,6 @@ module.exports = {
         }
         next(conError)
       }
-      let activeInt = 1
-      if (!user.isActive.value) activeInt = 0
 
       connection.query(
         'INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) VALUES(?,?,?,?,?,?,?,?,?);',
@@ -338,14 +336,12 @@ module.exports = {
                 next(err)
               } else {
                 console.log(value)
-                let activeInt = 1
-                if (!value.isActive.value) activeInt = 0
                 connection.query(
                   `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
                   [
                     value.firstName,
                     value.lastName,
-                    activeInt,
+                    value.isActive,
                     value.emailAdress,
                     value.password,
                     value.phoneNumber,
