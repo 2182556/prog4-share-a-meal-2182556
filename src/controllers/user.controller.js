@@ -18,7 +18,10 @@ const userSchema = Joi.object({
     .pattern(
       new RegExp('(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$')
     ),
-  phoneNumber: Joi.string().phoneNumber().required().default(''),
+  phoneNumber: Joi.string()
+    .pattern(new RegExp('^(?=^.{8,}$)[+]?[0-9]+[ ]?[-]?[0-9]+$'))
+    .required()
+    .default('+31 612345678'),
   roles: Joi.string().default('editor,guest'),
 })
 
@@ -43,9 +46,9 @@ module.exports = {
       // next(err)
     }
   },
-  checkUniqueEmail: (id, emailAdress) => {
+  checkUniqueEmail: (req, res, next) => {
     console.log('Checking if email is unique')
-    if (emailAdress != undefined) {
+    if (req.body.emailAdress != undefined) {
       dbconnection.getConnection(function (err, connection) {
         if (err) {
           const conError = {
@@ -56,7 +59,7 @@ module.exports = {
         }
 
         connection.query(
-          `SELECT * FROM user WHERE emailAdress='${emailAdress}';`,
+          `SELECT * FROM user WHERE emailAdress='${req.body.emailAdress}';`,
           function (error, results, fields) {
             connection.release()
 
@@ -68,12 +71,14 @@ module.exports = {
               next(err)
             } else {
               var user = Object.assign({}, results[0])
-              if (results.length > 0 && user.id != id) {
+              if (results.length > 0 && user.id != req.params.id) {
                 console.log(user.id)
                 res.status(409).json({
                   status: 409,
-                  message: `The email address ${emailAdress} is already in use, please use a different emailaddress.`,
+                  message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
                 })
+              } else {
+                next()
               }
             }
           }
@@ -88,9 +93,10 @@ module.exports = {
     console.log('addUser called')
     console.log(value)
     let user = value
-    this.checkUniqueEmail(0, value.emailAdress)
+
     dbconnection.getConnection(function (err, connection) {
       if (err) {
+        logger.error('connection error')
         const conError = {
           status: 500,
           message: err.sqlMessage,
@@ -116,7 +122,10 @@ module.exports = {
         function (error, results, fields) {
           connection.release()
 
+          logger.info('queried')
+
           if (error) {
+            logger.error('error after query', error.sqlMessage)
             const conError = {
               status: 500,
               message: error.sqlMessage,
@@ -328,9 +337,6 @@ module.exports = {
                 }
                 next(err)
               } else {
-                if (user.emailAdress != value.emailAdress) {
-                  checkUniqueEmail(user.id, value.emailAdress)
-                }
                 console.log(value)
                 let activeInt = 1
                 if (!value.isActive.value) activeInt = 0
@@ -389,29 +395,29 @@ module.exports = {
   },
   deleteUser: (req, res, next) => {
     const id = req.params.id
-    if (id == req.params.userId) {
-      dbconnection.getConnection(function (err, connection) {
-        if (err) {
-          const conError = {
-            status: 500,
-            message: err.sqlMessage,
-          }
-          next(conError)
+    dbconnection.getConnection(function (err, connection) {
+      if (err) {
+        const conError = {
+          status: 500,
+          message: err.sqlMessage,
         }
+        next(conError)
+      }
 
-        connection.query(
-          `SELECT * FROM user WHERE id=${id};`,
-          function (error, results, fields) {
-            connection.release()
-            if (error) {
-              const err = {
-                status: 500,
-                message: error.sqlMessage,
-              }
-              next(err)
-            } else {
-              console.log('results = ', results.length)
-              if (results.length > 0) {
+      connection.query(
+        `SELECT * FROM user WHERE id=${id};`,
+        function (error, results, fields) {
+          connection.release()
+          if (error) {
+            const err = {
+              status: 500,
+              message: error.sqlMessage,
+            }
+            next(err)
+          } else {
+            console.log('results = ', results.length)
+            if (results.length > 0) {
+              if (id == req.userId) {
                 connection.query(
                   `DELETE FROM user WHERE id=${id};`,
                   function (error, results, fields) {
@@ -433,30 +439,30 @@ module.exports = {
                     }
                   }
                 )
-
-                // dbconnection.end((err) => {
-                //   console.log("Pool was closed.");
-                // });
               } else {
-                res.status(400).json({
-                  status: 400,
-                  message: `User does not exist`,
+                res.status(403).json({
+                  status: 403,
+                  message: `You are not authorized to remove this user`,
                 })
-                // const err = {
-                //   status: 400,
-                //   message: `User does not exist`,
-                // }
-                // next(err)
               }
+
+              // dbconnection.end((err) => {
+              //   console.log("Pool was closed.");
+              // });
+            } else {
+              res.status(400).json({
+                status: 400,
+                message: `User does not exist`,
+              })
+              // const err = {
+              //   status: 400,
+              //   message: `User does not exist`,
+              // }
+              // next(err)
             }
           }
-        )
-      })
-    } else {
-      res.status(403).json({
-        status: 403,
-        message: `You are not authorized to remove this user`,
-      })
-    }
+        }
+      )
+    })
   },
 }
