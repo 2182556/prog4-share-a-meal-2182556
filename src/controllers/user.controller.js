@@ -461,4 +461,71 @@ module.exports = {
       )
     })
   },
+  //for debugging only
+  deleteAll: (res, req, next) => {
+    dbconnection.getConnection(function (err, connection) {
+      if (err) {
+        const conError = {
+          status: 500,
+          message: err.sqlMessage,
+        }
+        next(conError)
+      }
+
+      connection.query(
+        `DELETE IGNORE FROM user;`,
+        function (error, results, fields) {
+          connection.release()
+          if (error) {
+            const err = {
+              status: 500,
+              message: error.sqlMessage,
+            }
+            next(err)
+          } else {
+            res.status(200).json({
+              status: 200,
+              message: 'OK',
+            })
+          }
+        }
+      )
+    })
+  },
+  addAll: (res, req, next) => {
+    dbconnection.getConnection(function (err, connection) {
+      if (err) {
+        const conError = {
+          status: 500,
+          message: err.sqlMessage,
+        }
+        next(conError)
+      }
+
+      connection.query(
+        'INSERT INTO `user` VALUES' +
+          "(1,'Mariëtte','van den Dullemen',1,'m.vandullemen@server.nl','Secret11','','','','')," +
+          "(2,'John','Doe',1,'j.doe@server.com','Secret11','06 12425475','editor,guest','','')," +
+          "(3,'Herman','Huizinga',1,'h.huizinga@server.nl','Secret11','06-12345678','editor,guest','','')," +
+          "(4,'Marieke','Van Dam',0,'m.vandam@server.nl','Secret11','06-12345678','editor,guest','','')," +
+          "(5,'Henk','Tank',1,'h.tank@server.com','Secret11','06 12425495','editor,guest','','')," +
+          "(6,'Davide','Ambesi',1,'d.ambesi@avans.nl','Secret11','','editor,guest','','');",
+        function (error, results, fields) {
+          connection.release()
+          if (error) {
+            const err = {
+              status: 500,
+              message: error.sqlMessage,
+            }
+            next(err)
+          } else {
+            res.status(200).json({
+              status: 200,
+              message: 'OK',
+            })
+          }
+        }
+      )
+    })
+  },
 }
