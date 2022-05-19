@@ -31,7 +31,13 @@ module.exports = {
       'SELECT id, firstName, lastName, password, isActive FROM user WHERE emailAdress=?'
 
     dbconnection.getConnection(function (err, connection) {
-      if (err) next(err)
+      if (err) {
+        const error = {
+          status: 500,
+          message: err.sqlMessage,
+        }
+        next(error)
+      }
 
       connection.query(
         queryString,
@@ -44,6 +50,7 @@ module.exports = {
           logger.debug(results)
 
           if (results && results.length == 1) {
+            logger.debug('one result')
             if (value.password == results[0].password) {
               const { password, ...userinfo } = results[0]
               const payload = { id: userinfo.id }
@@ -63,14 +70,16 @@ module.exports = {
                 }
               )
             } else {
+              logger.debug('Password does not match')
               res.status(400).json({
-                statusCode: 400,
+                status: 400,
                 message: 'The password does not match the emailAdress',
               })
             }
           } else {
+            logger.debug('User does not exist')
             res.status(404).json({
-              statusCode: 404,
+              status: 404,
               message: 'There was no user found with this emailAdress',
             })
           }

@@ -447,5 +447,22 @@ describe('Manage users', () => {
           done()
         })
     })
+    it.only('TC-101-5 User does not exist', (done) => {
+      chai
+        .request(server)
+        .post('/api/auth/login')
+        .send({
+          emailAdress: 'random@adress.com',
+          password: 'Secret11',
+        })
+        .end((err, res) => {
+          // res.should.be.an('');
+          let { status, message } = res.body
+          console.log(status)
+          status.should.equal(404)
+          // result.should.be.a('string').that.equals('');
+          done()
+        })
+    })
   })
 })
