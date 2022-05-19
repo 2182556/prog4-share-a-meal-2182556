@@ -66,6 +66,7 @@ module.exports = {
                       status: 200,
                       result: { ...userinfo, token },
                     })
+                    return
                   }
                 }
               )
@@ -75,6 +76,7 @@ module.exports = {
                 status: 400,
                 message: 'The password does not match the emailAdress',
               })
+              return
             }
           } else {
             logger.debug('User does not exist')
@@ -82,6 +84,7 @@ module.exports = {
               status: 404,
               message: 'There was no user found with this emailAdress',
             })
+            return
           }
         }
       )
