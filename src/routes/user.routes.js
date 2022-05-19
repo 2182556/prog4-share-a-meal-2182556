@@ -31,14 +31,14 @@ router.put(
   userController.updateUser
 )
 
+router.delete('/user/all', userController.deleteAll)
+
+router.post('/user/all', userController.addAll)
+
 router.delete(
   '/user/:id',
   authController.validateToken,
   userController.deleteUser
 )
-
-router.delete('/userall', userController.deleteAll)
-
-router.post('/userall', userController.addAll)
 
 module.exports = router
