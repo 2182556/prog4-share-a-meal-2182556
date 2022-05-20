@@ -285,6 +285,7 @@ module.exports = {
                       connection.release()
 
                       if (error) {
+                        logger.error(error.sqlMessage)
                         const err = {
                           status: 500,
                           message: error.sqlMessage,
