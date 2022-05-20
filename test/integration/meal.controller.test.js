@@ -351,7 +351,7 @@ describe('Manage meals', () => {
         })
     })
 
-    it.only('TC-302-5 Meal succesfully updated', (done) => {
+    it('TC-302-5 Meal succesfully updated', (done) => {
       chai
         .request(server)
         .put('/api/meal/1')
