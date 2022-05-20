@@ -189,8 +189,9 @@ module.exports = {
       'street',
       'city',
     ]
+    //IF(isActive, "true", "false")
     let queryString =
-      'SELECT id, firstName, lastName, IF(isActive, "true", "false") isActive, emailAdress, phoneNumber, roles, street, city FROM user'
+      'SELECT id, firstName, lastName, isActive, emailAdress, phoneNumber, roles, street, city FROM user'
     let queryParams = []
     if (Object.keys(req.query).length > 0) {
       queryString += ' WHERE '
@@ -199,7 +200,8 @@ module.exports = {
         if (allowedParams.includes(p)) {
           if (i > 0) queryString += ' AND '
           if (p == 'isActive') {
-            queryString += `isActive IS ${req.query[p]}`
+            if (req.query[p].boolean) queryString += 'isActive IS TRUE'
+            else queryString += 'isActive IS FALSE'
           } else {
             queryString += `${p}=?`
             queryParams.push(req.query[p])
@@ -223,6 +225,7 @@ module.exports = {
           connection.release()
 
           if (error) {
+            logger.error(error.sqlMessage)
             const err = {
               status: 500,
               message: error.sqlMessage,
