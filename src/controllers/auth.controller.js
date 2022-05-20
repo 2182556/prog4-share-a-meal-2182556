@@ -39,7 +39,7 @@ module.exports = {
       })
     } else {
       const queryString =
-        'SELECT `id`, `firstName`, `lastName`, `password`, IF(`isActive`, "true", "false") `isActive` FROM `user` WHERE `emailAdress`=?'
+        "SELECT `id`, `firstName`, `lastName`, `password`, IF(`isActive`, 'true', 'false') `isActive` FROM `user` WHERE `emailAdress`=?"
 
       dbconnection.getConnection(function (err, connection) {
         if (err) {

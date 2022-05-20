@@ -10,7 +10,7 @@ router.post(
   userController.addUser
 )
 
-router.get('/user', authController.validateToken, userController.getAllUsers)
+router.get('/user', userController.getAllUsers)
 
 router.get(
   '/user/profile',
