@@ -13,9 +13,10 @@ const mealSchema = Joi.object({
   imageUrl: Joi.string().required(),
   allergenes: Joi.string()
     .required()
+    .allow('')
     .pattern(
       new RegExp(
-        '^\\[(|"(gluten|noten|lactose)"(,("(gluten|noten|lactose)")){0,2})\\]$'
+        '^(\\s*|"(gluten|noten|lactose)"(,("(gluten|noten|lactose)")){0,2})$'
       )
     ),
   maxAmountOfParticipants: Joi.number().required(),
@@ -229,6 +230,7 @@ module.exports = {
                 console.log(results[0])
                 var meal = Object.assign({}, results[0])
                 logger.info(new Date(meal.dateTime))
+                logger.info(meal.allergenes)
                 console.log(meal)
                 const updateMealSchema = Joi.object({
                   name: Joi.string().required(),
@@ -241,9 +243,10 @@ module.exports = {
                   imageUrl: Joi.string().default(`${meal.imageUrl}`),
                   allergenes: Joi.string()
                     .default(`${meal.allergenes}`)
+                    .allow('')
                     .pattern(
                       new RegExp(
-                        '^\\[(|"(gluten|noten|lactose)"(,("(gluten|noten|lactose)")){0,2})\\]$'
+                        '^(//s*|"(gluten|noten|lactose)"(,("(gluten|noten|lactose)")){0,2})$'
                       )
                     ),
                   maxAmountOfParticipants: Joi.number().required(),
@@ -251,11 +254,7 @@ module.exports = {
                 })
 
                 const { error, value } = updateMealSchema.validate(req.body)
-                logger.debug(value.dateTime)
-                logger.debug(value.dateTime.Date)
-                logger.debug(value.dateTime.string)
-                logger.debug(value.dateTime.value)
-                logger.debug(new Date(value.dateTime))
+                logger.debug(value.allergenes)
                 const newDateTime = new Date(value.dateTime)
                 logger.debug(newDateTime)
                 if (error) {
