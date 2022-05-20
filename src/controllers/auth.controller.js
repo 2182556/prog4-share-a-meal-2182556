@@ -69,11 +69,11 @@ module.exports = {
               //   status: 500,
               //   message: error.sqlMessage,
               // })
-              const error = {
+              const qError = {
                 status: 500,
                 message: error.sqlMessage,
               }
-              next(error)
+              next(qError)
             }
 
             logger.debug(results)
