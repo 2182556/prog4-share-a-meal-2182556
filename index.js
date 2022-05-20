@@ -24,8 +24,8 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api', userRoutes)
-app.use('/api', mealRoutes)
 app.use('/api', authRoutes)
+app.use('/api', mealRoutes)
 
 app.all('*', (req, res) => {
   res.status(404).json({
@@ -35,6 +35,7 @@ app.all('*', (req, res) => {
 })
 
 app.use((err, req, res, next) => {
+  logger.error('Express error handler called ', err)
   res.status(err.status).json(err)
   //change to 500?
 })

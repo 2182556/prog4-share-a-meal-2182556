@@ -31,6 +31,7 @@ module.exports = {
       // if (res.headersSent) {
       //   return next(error)
       // }
+      logger.error(error.message)
       return res.status(400).json({
         status: 400,
         message: error.message,
@@ -48,6 +49,7 @@ module.exports = {
           //   status: 500,
           //   message: err.sqlMessage,
           // })
+          logger.error(err.sqlMessage)
           const error = {
             status: 500,
             message: err.sqlMessage,
@@ -59,6 +61,7 @@ module.exports = {
           queryString,
           [value.emailAdress],
           function (error, results, fields) {
+            logger.debug('query made')
             connection.release()
 
             if (error) {
@@ -69,6 +72,7 @@ module.exports = {
               //   status: 500,
               //   message: error.sqlMessage,
               // })
+              logger.error('Error from query ', error.sqlMessage)
               const qError = {
                 status: 500,
                 message: error.sqlMessage,
