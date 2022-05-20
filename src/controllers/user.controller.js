@@ -190,7 +190,7 @@ module.exports = {
       'city',
     ]
     let queryString =
-      'SELECT id, firstName, lastName, IF(isActive, "true", "false") isActive, emailAdress, phoneNumber, roles, street, city FROM user'
+      'SELECT id, firstName, lastName, IF(isActive, true, false) isActive, emailAdress, phoneNumber, roles, street, city FROM user'
     // let queryString = 'SELECT * FROM user'
     let queryParams = []
     if (Object.keys(req.query).length > 0) {
