@@ -25,8 +25,8 @@ const INSERT_USERS =
 
 const INSERT_MEALS =
   'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES' +
-  "(1, 'Meal A', 'description', 'image url', NOW(), 5, 6.50, 1)," +
-  "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
+  "(1, 'Meal A', 'description', 'image url', '2022-06-22 17:35:00', 5, 6.50, 1)," +
+  "(2, 'Meal B', 'description', 'image url', '2022-07-22 18:00:00', 5, 6.50, 2);"
 
 describe('Login', () => {
   before((done) => {

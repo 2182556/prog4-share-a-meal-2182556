@@ -228,6 +228,7 @@ module.exports = {
               if (req.userId == results[0].cookId) {
                 console.log(results[0])
                 var meal = Object.assign({}, results[0])
+                logger.info(new Date(meal.dateTime))
                 console.log(meal)
                 const updateMealSchema = Joi.object({
                   name: Joi.string().required(),
@@ -236,7 +237,7 @@ module.exports = {
                   isVega: Joi.boolean().default(`${meal.isVega}`),
                   isVegan: Joi.boolean().default(`${meal.isVegan}`),
                   isToTakeHome: Joi.boolean().default(`${meal.isToTakeHome}`),
-                  dateTime: Joi.string().default(`${meal.dateTime}`),
+                  dateTime: Joi.date().default(`${meal.dateTime}`),
                   imageUrl: Joi.string().default(`${meal.imageUrl}`),
                   allergenes: Joi.string()
                     .default(`${meal.allergenes}`)
@@ -250,6 +251,13 @@ module.exports = {
                 })
 
                 const { error, value } = updateMealSchema.validate(req.body)
+                logger.debug(value.dateTime)
+                logger.debug(value.dateTime.Date)
+                logger.debug(value.dateTime.string)
+                logger.debug(value.dateTime.value)
+                logger.debug(new Date(value.dateTime))
+                const newDateTime = new Date(value.dateTime)
+                logger.debug(newDateTime)
                 if (error) {
                   const err = {
                     status: 400,
@@ -267,7 +275,7 @@ module.exports = {
                       value.isVega,
                       value.isVegan,
                       value.isToTakeHome,
-                      value.dateTime,
+                      newDateTime.getDate + ' ' + newDateTime.getTime,
                       value.imageUrl,
                       value.allergenes,
                       value.maxAmountOfParticipants,
