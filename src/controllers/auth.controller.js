@@ -28,6 +28,9 @@ module.exports = {
     logger.debug(value.emailAdress)
 
     if (error) {
+      if (res.headersSent) {
+        return next(error)
+      }
       res.status(400).json({
         status: 400,
         message: error.message,
@@ -38,11 +41,18 @@ module.exports = {
 
       dbconnection.getConnection(function (err, connection) {
         if (err) {
-          const error = {
+          if (res.headersSent) {
+            return next(err)
+          }
+          res.status(500).json({
             status: 500,
             message: err.sqlMessage,
-          }
-          next(error)
+          })
+          // const error = {
+          //   status: 500,
+          //   message: err.sqlMessage,
+          // }
+          // next(error)
         }
 
         connection.query(
@@ -51,7 +61,20 @@ module.exports = {
           function (error, results, fields) {
             connection.release()
 
-            if (error) next(error)
+            if (error) {
+              if (res.headersSent) {
+                return next(err)
+              }
+              res.status(500).json({
+                status: 500,
+                message: err.sqlMessage,
+              })
+              // const error = {
+              //   status: 500,
+              //   message: error.sqlMessage,
+              // }
+              // next(error)
+            }
 
             logger.debug(results)
 
@@ -82,7 +105,6 @@ module.exports = {
                   status: 400,
                   message: 'The password does not match the emailAdress',
                 })
-                return
               }
             } else {
               logger.debug('User does not exist')
@@ -90,7 +112,6 @@ module.exports = {
                 status: 404,
                 message: 'There was no user found with this emailAdress',
               })
-              return
             }
           }
         )
