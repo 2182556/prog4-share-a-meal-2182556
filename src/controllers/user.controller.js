@@ -189,7 +189,6 @@ module.exports = {
       'street',
       'city',
     ]
-    //IF(isActive, "true", "false")
     let queryString =
       'SELECT id, firstName, lastName, isActive, emailAdress, phoneNumber, roles, street, city FROM user'
     let queryParams = []
