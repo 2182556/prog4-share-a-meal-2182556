@@ -23,6 +23,7 @@ const loginSchema = Joi.object({
 module.exports = {
   login: (req, res, next) => {
     logger.info('login called')
+    logger.debug(req.body)
 
     const { error, value } = loginSchema.validate(req.body)
     logger.debug(value.emailAdress)
