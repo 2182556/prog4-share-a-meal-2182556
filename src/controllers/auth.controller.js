@@ -5,12 +5,19 @@ const logger = require('../config/config').logger
 const jwtPrivateKey = require('../config/config').jwtPrivateKey
 
 const loginSchema = Joi.object({
-  emailAdress: Joi.string().required().email(),
+  emailAdress: Joi.string()
+    .required()
+    .email()
+    .pattern(new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')),
   password: Joi.string()
     .required()
     .pattern(
       new RegExp('(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$')
-    ),
+    )
+    .messages({
+      'string.pattern.base':
+        'Password should be at least 8 characters, contain one capital letter and one number',
+    }),
 })
 
 module.exports = {
@@ -22,7 +29,7 @@ module.exports = {
 
     if (error) {
       res.status(400).json({
-        statusCode: 400,
+        status: 400,
         message: error.message,
       })
     } else {
@@ -90,7 +97,7 @@ module.exports = {
       })
     }
   },
-  validateToken(req, res, next) {
+  validateToken: (req, res, next) => {
     logger.info('validateToken called')
     // logger.trace(req.headers)
     // The headers should contain the authorization-field with value 'Bearer [token]'

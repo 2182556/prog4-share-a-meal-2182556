@@ -17,11 +17,19 @@ const userSchema = Joi.object({
     .required()
     .pattern(
       new RegExp('(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$')
-    ),
+    )
+    .messages({
+      'string.pattern.base':
+        'Password should be at least 8 characters, contain one capital letter and one number',
+    }),
   phoneNumber: Joi.string()
-    .pattern(new RegExp('^(?=^.{8,}$)[+]?[0-9]+[ ]?[-]?[0-9]+$'))
+    .pattern(new RegExp('^(?=^.{9,}$)[+]?[0-9]+[ -]?[0-9]+$'))
     .required()
-    .default('+31 612345678'),
+    .default('+31 612345678')
+    .messages({
+      'string.pattern.base':
+        "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",
+    }),
   roles: Joi.string().default('editor,guest'),
 })
 
@@ -32,6 +40,7 @@ module.exports = {
 
     const { error, value } = userSchema.validate(req.body)
     if (error == undefined) {
+      req.validatedUser = value
       next()
     } else {
       logger.error(error.message)
@@ -89,10 +98,9 @@ module.exports = {
     }
   },
   addUser: (req, res, next) => {
-    const { error, value } = userSchema.validate(req.body)
+    let user = req.validatedUser
     console.log('addUser called')
-    console.log(value)
-    let user = value
+    console.log(user)
 
     dbconnection.getConnection(function (err, connection) {
       if (err) {
@@ -181,7 +189,8 @@ module.exports = {
       'street',
       'city',
     ]
-    let queryString = 'SELECT id, firstName, lastName FROM user'
+    let queryString =
+      'SELECT id, firstName, lastName, IF(isActive, "true", "false") isActive, emailAdress, phoneNumber, roles, street, city FROM user'
     let queryParams = []
     if (Object.keys(req.query).length > 0) {
       queryString += ' WHERE '
@@ -189,8 +198,13 @@ module.exports = {
       for (p in req.query) {
         if (allowedParams.includes(p)) {
           if (i > 0) queryString += ' AND '
-          queryString += `${p}=?`
-          queryParams.push(req.query[p])
+          if (p == 'isActive') {
+            queryString += `isActive IS ${req.query[p]}`
+          } else {
+            queryString += `${p}=?`
+            queryParams.push(req.query[p])
+          }
+
           i++
         }
       }
@@ -217,7 +231,7 @@ module.exports = {
           } else {
             console.log('results = ', results.length)
             res.status(200).json({
-              statusCode: 200,
+              status: 200,
               result: results,
             })
           }
@@ -230,9 +244,46 @@ module.exports = {
     })
   },
   getUserProfile: (req, res, next) => {
-    res.status(503).json({
-      status: 503,
-      message: 'This feature has not been implemented yet.',
+    const id = req.userId
+    dbconnection.getConnection(function (err, connection) {
+      if (err) {
+        const conError = {
+          status: 500,
+          message: err.sqlMessage,
+        }
+        next(conError)
+      }
+
+      connection.query(
+        `SELECT * FROM user WHERE id=${id};`,
+        function (error, results, fields) {
+          connection.release()
+          if (error) {
+            const err = {
+              status: 500,
+              message: error.sqlMessage,
+            }
+            next(err)
+          } else {
+            console.log('results = ', results.length)
+            if (results && results.length == 1) {
+              res.status(200).json({
+                status: 200,
+                result: results[0],
+              })
+
+              // dbconnection.end((err) => {
+              //   console.log("Pool was closed.");
+              // });
+            } else {
+              res.status(500).json({
+                status: 500,
+                message: `Something went wrong, could not find logged in user`,
+              })
+            }
+          }
+        }
+      )
     })
   },
   getUserById: (req, res, next) => {
@@ -284,6 +335,7 @@ module.exports = {
     })
   },
   updateUser: (req, res, next) => {
+    logger.info('updateUser called')
     const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
       if (err) {
@@ -308,70 +360,79 @@ module.exports = {
           } else {
             console.log('results = ', results.length)
             if (results.length > 0) {
-              console.log(results[0])
-              var user = Object.assign({}, results[0])
-              console.log(user)
-              const updateUserSchema = Joi.object({
-                id: Joi.number().integer().default(`${user.id}`),
-                firstName: Joi.string().default(`${user.firstName}`),
-                lastName: Joi.string().default(`${user.lastName}`),
-                emailAdress: Joi.string()
-                  .email({
-                    minDomainSegments: 2,
-                  })
-                  .default(`${user.emailAdress}`),
-                street: Joi.string().default(`${user.street}`),
-                city: Joi.string().default(`${user.city}`),
-                isActive: Joi.boolean().default(`${user.isActive}`),
-                password: Joi.string().default(`${user.password}`),
-                phoneNumber: Joi.string().default(`${user.phoneNumber}`),
-                roles: Joi.string().default(`${user.phoneNumber}`),
-              })
-              const { error, value } = userSchema.validate(req.body)
-              if (error) {
-                const err = {
-                  status: 400,
-                  message: error.message,
-                }
-                next(err)
-              } else {
-                console.log(value)
-                connection.query(
-                  `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
-                  [
-                    value.firstName,
-                    value.lastName,
-                    value.isActive,
-                    value.emailAdress,
-                    value.password,
-                    value.phoneNumber,
-                    value.roles,
-                    value.street,
-                    value.city,
-                    id,
-                  ],
-                  function (error, results, fields) {
-                    connection.release()
-
-                    if (error) {
-                      const err = {
-                        status: 500,
-                        message: error.sqlMessage,
-                      }
-                      next(err)
-                    } else {
-                      let user = {
-                        id: id,
-                        ...value,
-                      }
-                      console.log(user)
-                      res.status(200).json({
-                        status: 200,
-                        result: user,
-                      })
-                    }
+              if (id == req.userId) {
+                console.log(results[0])
+                var user = Object.assign({}, results[0])
+                console.log(user)
+                const updateUserSchema = Joi.object({
+                  id: Joi.number().integer().default(`${user.id}`),
+                  firstName: Joi.string().default(`${user.firstName}`),
+                  lastName: Joi.string().default(`${user.lastName}`),
+                  emailAdress: Joi.string()
+                    .email({
+                      minDomainSegments: 2,
+                    })
+                    .default(`${user.emailAdress}`),
+                  street: Joi.string().default(`${user.street}`),
+                  city: Joi.string().default(`${user.city}`),
+                  isActive: Joi.boolean().default(`${user.isActive}`),
+                  password: Joi.string().default(`${user.password}`),
+                  phoneNumber: Joi.string().default(`${user.phoneNumber}`),
+                  roles: Joi.string().default(`${user.phoneNumber}`),
+                })
+                const { error, value } = userSchema.validate(req.body)
+                if (error) {
+                  const err = {
+                    status: 400,
+                    message: error.message,
                   }
-                )
+                  next(err)
+                } else {
+                  console.log(value)
+                  connection.query(
+                    `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
+                    [
+                      value.firstName,
+                      value.lastName,
+                      value.isActive,
+                      value.emailAdress,
+                      value.password,
+                      value.phoneNumber,
+                      value.roles,
+                      value.street,
+                      value.city,
+                      id,
+                    ],
+                    function (error, results, fields) {
+                      connection.release()
+
+                      if (error) {
+                        const err = {
+                          status: 500,
+                          message: error.sqlMessage,
+                        }
+                        next(err)
+                      } else {
+                        logger.info(user.id)
+                        let updatedUser = {
+                          id: user.id,
+                          ...value,
+                        }
+                        console.log(updatedUser)
+                        res.status(200).json({
+                          status: 200,
+                          result: updatedUser,
+                        })
+                      }
+                    }
+                  )
+                }
+              } else {
+                logger.info('id does not match')
+                res.status(401).json({
+                  status: 401,
+                  message: 'You are not authorized to update this user',
+                })
               }
             } else {
               const error = {
@@ -438,7 +499,7 @@ module.exports = {
               } else {
                 res.status(403).json({
                   status: 403,
-                  message: `You are not authorized to remove this user`,
+                  message: `You are not authorized to delete this user`,
                 })
               }
 
@@ -450,11 +511,6 @@ module.exports = {
                 status: 400,
                 message: `User does not exist`,
               })
-              // const err = {
-              //   status: 400,
-              //   message: `User does not exist`,
-              // }
-              // next(err)
             }
           }
         }

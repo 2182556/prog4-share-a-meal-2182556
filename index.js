@@ -3,8 +3,9 @@ const app = express()
 require('dotenv').config()
 const port = process.env.PORT
 const bodyParser = require('body-parser')
-const userRoutes = require('./src/routes/user.routes')
 const authRoutes = require('./src/routes/auth.routes')
+const userRoutes = require('./src/routes/user.routes')
+const mealRoutes = require('./src/routes/meal.routes')
 const logger = require('./src/config/config').logger
 
 app.use(bodyParser.json())
@@ -22,8 +23,9 @@ app.get('/', (req, res) => {
   })
 })
 
-app.use('/api', userRoutes)
 app.use('/api', authRoutes)
+app.use('/api', userRoutes)
+app.use('/api', mealRoutes)
 
 app.all('*', (req, res) => {
   res.status(404).json({
