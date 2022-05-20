@@ -51,14 +51,13 @@ describe('Login', () => {
       })
       connection.query(INSERT_USERS, function (error, results, fields) {
         if (error) throw error
-        connection.release()
       })
       connection.query(INSERT_MEALS, function (error, results, fields) {
         if (error) throw error
         connection.release()
+        done()
       })
     })
-    done()
   })
   describe('UC-101 Login /api/auth/login', () => {
     it('TC-101-1 When a required input is missing, a validation error should be returned', (done) => {
@@ -142,6 +141,7 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
+          logger.debug('Secret1')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -167,6 +167,7 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
+          logger.debug('secret11')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -192,6 +193,7 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
+          logger.debug('Secretone')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -217,6 +219,7 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
+          logger.debug('SECRET11')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -242,6 +245,7 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
+          logger.debug('Secret1\n1')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -250,8 +254,8 @@ describe('Login', () => {
             .that.equals(
               'Password should be at least 8 characters, contain one capital letter and one number'
             )
-          done()
         })
+      done()
     })
 
     it('TC-101-4 User does not exist', (done) => {

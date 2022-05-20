@@ -93,11 +93,20 @@ module.exports = {
                   }
                   next(conError)
                 }
+
+                connection.query(
+                  'INSERT INTO meal_participants_user VALUES (?,?)',
+                  [results[0].mealId, req.userId],
+                  function (error, results, fields) {
+                    if (error) throw error
+                  }
+                )
+
                 meal = {
                   id: results[0].mealId,
+                  cookId: req.userId,
                   ...meal,
                 }
-
                 res.status(201).json({
                   status: 201,
                   result: meal,
@@ -114,75 +123,36 @@ module.exports = {
     })
   },
   getAllMeals: (req, res, next) => {
-    console.log('getAllUsers called')
-
-    console.log(req.query)
-    let allowedParams = [
-      'firstName',
-      'lastName',
-      'isActive',
-      'emailAdress',
-      'phoneNumber',
-      'roles',
-      'street',
-      'city',
-    ]
-    let queryString =
-      'SELECT id, firstName, lastName, IF(isActive, "true", "false") isActive, emailAdress, phoneNumber, roles, street, city FROM user'
-    let queryParams = []
-    if (Object.keys(req.query).length > 0) {
-      queryString += ' WHERE '
-      let i = 0
-      for (p in req.query) {
-        if (allowedParams.includes(p)) {
-          if (i > 0) queryString += ' AND '
-          if (p == 'isActive') {
-            queryString += `isActive IS ${req.query[p]}`
-          } else {
-            queryString += `${p}=?`
-            queryParams.push(req.query[p])
-          }
-
-          i++
-        }
-      }
-    }
-    queryString += ';'
-    console.log(queryString)
-    console.log(queryParams)
+    console.log('getAllMeals called')
 
     dbconnection.getConnection(function (err, connection) {
       if (err) next(err)
 
-      connection.query(
-        queryString,
-        queryParams,
-        function (error, results, fields) {
-          connection.release()
+      connection.query('SELECT * FROM meal', function (error, results, fields) {
+        connection.release()
 
-          if (error) {
-            const err = {
-              status: 500,
-              message: error.sqlMessage,
-            }
-            next(err)
-          } else {
-            console.log('results = ', results.length)
-            res.status(200).json({
-              statusCode: 200,
-              result: results,
-            })
+        if (error) {
+          const err = {
+            status: 500,
+            message: error.sqlMessage,
           }
-
-          // dbconnection.end((err) => {
-          //   console.log("Pool was closed.");
-          // });
+          next(err)
+        } else {
+          console.log('results = ', results.length)
+          res.status(200).json({
+            status: 200,
+            result: results,
+          })
         }
-      )
+
+        // dbconnection.end((err) => {
+        //   console.log("Pool was closed.");
+        // });
+      })
     })
   },
   getMealById: (req, res, next) => {
-    console.log('getUserById called')
+    console.log('getMealById called')
     const id = req.params.id
     console.log(id)
     dbconnection.getConnection(function (err, connection) {
@@ -195,7 +165,7 @@ module.exports = {
       }
 
       connection.query(
-        `SELECT * FROM user WHERE id=${id};`,
+        `SELECT * FROM meal WHERE id=${id};`,
         function (error, results, fields) {
           connection.release()
 
@@ -216,7 +186,7 @@ module.exports = {
             } else {
               const err = {
                 status: 404,
-                message: `User with id ${id} not found`,
+                message: `Meal could not be found`,
               }
               next(err)
             }
@@ -230,53 +200,56 @@ module.exports = {
     })
   },
   updateMeal: (req, res, next) => {
-    logger.info('updateUser called')
+    logger.info('updateMeal called')
     const id = req.params.id
-    if (id == req.userId) {
-      logger.info('id matches')
-      dbconnection.getConnection(function (err, connection) {
-        if (err) {
-          const conError = {
-            status: 500,
-            message: err.sqlMessage,
-          }
-          next(conError)
+    dbconnection.getConnection(function (err, connection) {
+      if (err) {
+        const conError = {
+          status: 500,
+          message: err.sqlMessage,
         }
+        next(conError)
+      }
 
-        connection.query(
-          `SELECT * FROM user WHERE id=?;`,
-          [id],
-          function (error, results, fields) {
-            connection.release()
-            if (error) {
-              const err = {
-                status: 500,
-                message: error.sqlMessage,
-              }
-              next(err)
-            } else {
-              console.log('results = ', results.length)
-              if (results.length > 0) {
+      connection.query(
+        `SELECT * FROM meal WHERE id=?;`,
+        [id],
+        function (error, results, fields) {
+          connection.release()
+          if (error) {
+            const err = {
+              status: 500,
+              message: error.sqlMessage,
+            }
+            next(err)
+          } else {
+            console.log('results = ', results.length)
+            if (results.length > 0) {
+              if (req.userId == results[0].cookId) {
                 console.log(results[0])
-                var user = Object.assign({}, results[0])
-                console.log(user)
-                const updateUserSchema = Joi.object({
-                  id: Joi.number().integer().default(`${user.id}`),
-                  firstName: Joi.string().default(`${user.firstName}`),
-                  lastName: Joi.string().default(`${user.lastName}`),
-                  emailAdress: Joi.string()
-                    .email({
-                      minDomainSegments: 2,
-                    })
-                    .default(`${user.emailAdress}`),
-                  street: Joi.string().default(`${user.street}`),
-                  city: Joi.string().default(`${user.city}`),
-                  isActive: Joi.boolean().default(`${user.isActive}`),
-                  password: Joi.string().default(`${user.password}`),
-                  phoneNumber: Joi.string().default(`${user.phoneNumber}`),
-                  roles: Joi.string().default(`${user.phoneNumber}`),
+                var meal = Object.assign({}, results[0])
+                console.log(meal)
+                const updateMealSchema = Joi.object({
+                  name: Joi.string().required(),
+                  description: Joi.string().default(`${meal.description}`),
+                  isActive: Joi.boolean().default(`${meal.isActive}`),
+                  isVega: Joi.boolean().default(`${meal.isVega}`),
+                  isVegan: Joi.boolean().default(`${meal.isVegan}`),
+                  isToTakeHome: Joi.boolean().default(`${meal.isToTakeHome}`),
+                  dateTime: Joi.string().default(`${meal.dateTime}`),
+                  imageUrl: Joi.string().default(`${meal.imageUrl}`),
+                  allergenes: Joi.string()
+                    .default(`${meal.allergenes}`)
+                    .pattern(
+                      new RegExp(
+                        '^\\[(|"(gluten|noten|lactose)"(,("(gluten|noten|lactose)")){0,2})\\]$'
+                      )
+                    ),
+                  maxAmountOfParticipants: Joi.number().required(),
+                  price: Joi.number().required(),
                 })
-                const { error, value } = userSchema.validate(req.body)
+
+                const { error, value } = updateMealSchema.validate(req.body)
                 if (error) {
                   const err = {
                     status: 400,
@@ -286,17 +259,19 @@ module.exports = {
                 } else {
                   console.log(value)
                   connection.query(
-                    `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
+                    `UPDATE meal SET name=?,description=?,isActive=?,isVega=?,isVegan=?,isToTakeHome=?,dateTime=?,imageUrl=?,allergenes=?,maxAmountOfParticipants=?,price=? WHERE id=?`,
                     [
-                      value.firstName,
-                      value.lastName,
+                      value.name,
+                      value.description,
                       value.isActive,
-                      value.emailAdress,
-                      value.password,
-                      value.phoneNumber,
-                      value.roles,
-                      value.street,
-                      value.city,
+                      value.isVega,
+                      value.isVegan,
+                      value.isToTakeHome,
+                      value.dateTime,
+                      value.imageUrl,
+                      value.allergenes,
+                      value.maxAmountOfParticipants,
+                      value.price,
                       id,
                     ],
                     function (error, results, fields) {
@@ -309,41 +284,40 @@ module.exports = {
                         }
                         next(err)
                       } else {
-                        let user = {
+                        let meal = {
                           id: id,
+                          cookId: req.userId,
                           ...value,
                         }
-                        console.log(user)
+                        console.log(meal)
                         res.status(200).json({
                           status: 200,
-                          result: user,
+                          result: meal,
                         })
                       }
                     }
                   )
                 }
               } else {
-                const error = {
-                  status: 400,
-                  message: `User does not exist`,
-                }
-                next(error)
+                res.status(403).json({
+                  status: 403,
+                  message: `You are not authorized to alter this meal`,
+                })
               }
+            } else {
+              res.status(404).json({
+                status: 404,
+                message: `Meal does not exist`,
+              })
             }
-
-            // dbconnection.end((err) => {
-            //   console.log("Pool was closed.");
-            // });
           }
-        )
-      })
-    } else {
-      logger.info('id does not match')
-      res.status(401).json({
-        status: 401,
-        message: 'You are not authorized to update this user',
-      })
-    }
+
+          // dbconnection.end((err) => {
+          //   console.log("Pool was closed.");
+          // });
+        }
+      )
+    })
   },
   deleteMeal: (req, res, next) => {
     const id = req.params.id
@@ -357,7 +331,7 @@ module.exports = {
       }
 
       connection.query(
-        `SELECT * FROM user WHERE id=${id};`,
+        `SELECT * FROM meal WHERE id=${id};`,
         function (error, results, fields) {
           connection.release()
           if (error) {
@@ -369,12 +343,10 @@ module.exports = {
           } else {
             console.log('results = ', results.length)
             if (results.length > 0) {
-              if (id == req.userId) {
+              if (results[0].cookId == req.userId) {
                 connection.query(
-                  `DELETE FROM user WHERE id=${id};`,
+                  `DELETE FROM meal WHERE id=${id};`,
                   function (error, results, fields) {
-                    // console.log(error);
-                    // console.log(error.sqlMessage);
                     if (error) {
                       console.log(error.sqlMessage)
                       const err = {
@@ -386,7 +358,7 @@ module.exports = {
                       console.log('deleted')
                       res.status(200).json({
                         status: 200,
-                        message: `User with id ${id} was deleted.`,
+                        message: `Meal with id ${id} was deleted.`,
                       })
                     }
                   }
@@ -394,7 +366,7 @@ module.exports = {
               } else {
                 res.status(403).json({
                   status: 403,
-                  message: `You are not authorized to delete this user`,
+                  message: `You are not authorized to delete this meal`,
                 })
               }
 
@@ -402,9 +374,9 @@ module.exports = {
               //   console.log("Pool was closed.");
               // });
             } else {
-              res.status(400).json({
-                status: 400,
-                message: `User does not exist`,
+              res.status(404).json({
+                status: 404,
+                message: `Meal does not exist`,
               })
             }
           }

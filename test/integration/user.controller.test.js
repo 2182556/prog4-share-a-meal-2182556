@@ -51,14 +51,13 @@ describe('Manage users', () => {
       })
       connection.query(INSERT_USERS, function (error, results, fields) {
         if (error) throw error
-        connection.release()
       })
       connection.query(INSERT_MEALS, function (error, results, fields) {
         if (error) throw error
         connection.release()
+        done()
       })
     })
-    done()
   })
   //Use case 201
   describe('UC-201 Register /api/user', () => {
@@ -384,6 +383,15 @@ describe('Manage users', () => {
       dbconnection.getConnection(function (err, connection) {
         if (err) throw err
 
+        connection.query(CLEAR_MEALS_TABLE, function (error, results, fields) {
+          if (error) throw error
+        })
+        connection.query(
+          CLEAR_PARTICIPANTS_TABLE,
+          function (error, results, fields) {
+            if (error) throw error
+          }
+        )
         connection.query(CLEAR_USERS_TABLE, function (error, results, fields) {
           if (error) throw error
           connection.release()
