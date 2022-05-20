@@ -28,9 +28,9 @@ module.exports = {
     logger.debug(value.emailAdress)
 
     if (error) {
-      if (res.headersSent) {
-        return next(error)
-      }
+      // if (res.headersSent) {
+      //   return next(error)
+      // }
       res.status(400).json({
         status: 400,
         message: error.message,
@@ -41,9 +41,9 @@ module.exports = {
 
       dbconnection.getConnection(function (err, connection) {
         if (err) {
-          if (res.headersSent) {
-            return next(err)
-          }
+          // if (res.headersSent) {
+          //   return next(err)
+          // }
           res.status(500).json({
             status: 500,
             message: err.sqlMessage,
@@ -62,9 +62,9 @@ module.exports = {
             connection.release()
 
             if (error) {
-              if (res.headersSent) {
-                return next(err)
-              }
+              // if (res.headersSent) {
+              //   return next(error)
+              // }
               res.status(500).json({
                 status: 500,
                 message: error.sqlMessage,

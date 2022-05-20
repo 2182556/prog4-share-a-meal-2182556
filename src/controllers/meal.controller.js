@@ -285,12 +285,16 @@ module.exports = {
                       connection.release()
 
                       if (error) {
-                        logger.error(error.sqlMessage)
-                        const err = {
+                        // logger.error(error.sqlMessage)
+                        // const err = {
+                        //   status: 500,
+                        //   message: error.sqlMessage,
+                        // }
+                        // next(err)
+                        res.status(500).json({
                           status: 500,
                           message: error.sqlMessage,
-                        }
-                        next(err)
+                        })
                       } else {
                         let meal = {
                           id: id,
