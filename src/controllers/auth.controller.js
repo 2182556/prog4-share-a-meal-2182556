@@ -67,7 +67,7 @@ module.exports = {
               }
               res.status(500).json({
                 status: 500,
-                message: err.sqlMessage,
+                message: error.sqlMessage,
               })
               // const error = {
               //   status: 500,
