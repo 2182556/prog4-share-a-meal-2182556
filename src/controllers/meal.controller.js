@@ -274,7 +274,7 @@ module.exports = {
                       value.isVega,
                       value.isVegan,
                       value.isToTakeHome,
-                      newDateTime.getDate + ' ' + newDateTime.getTime,
+                      newDateTime,
                       value.imageUrl,
                       value.allergenes,
                       value.maxAmountOfParticipants,
