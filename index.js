@@ -23,9 +23,9 @@ app.get('/', (req, res) => {
   })
 })
 
-app.use('/api', authRoutes)
 app.use('/api', userRoutes)
 app.use('/api', mealRoutes)
+app.use('/api', authRoutes)
 
 app.all('*', (req, res) => {
   res.status(404).json({

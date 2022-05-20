@@ -31,7 +31,7 @@ module.exports = {
       // if (res.headersSent) {
       //   return next(error)
       // }
-      res.status(400).json({
+      return res.status(400).json({
         status: 400,
         message: error.message,
       })
@@ -44,15 +44,15 @@ module.exports = {
           // if (res.headersSent) {
           //   return next(err)
           // }
-          res.status(500).json({
-            status: 500,
-            message: err.sqlMessage,
-          })
-          // const error = {
+          // res.status(500).json({
           //   status: 500,
           //   message: err.sqlMessage,
-          // }
-          // next(error)
+          // })
+          const error = {
+            status: 500,
+            message: err.sqlMessage,
+          }
+          next(error)
         }
 
         connection.query(
@@ -65,15 +65,15 @@ module.exports = {
               // if (res.headersSent) {
               //   return next(error)
               // }
-              res.status(500).json({
-                status: 500,
-                message: error.sqlMessage,
-              })
-              // const error = {
+              // res.status(500).json({
               //   status: 500,
               //   message: error.sqlMessage,
-              // }
-              // next(error)
+              // })
+              const error = {
+                status: 500,
+                message: error.sqlMessage,
+              }
+              next(error)
             }
 
             logger.debug(results)
@@ -91,24 +91,23 @@ module.exports = {
                     if (err) logger.error(err)
                     if (token) {
                       logger.info('User logged in, sending ', userinfo)
-                      res.status(200).json({
+                      return res.status(200).json({
                         status: 200,
                         result: { ...userinfo, token },
                       })
-                      return
                     }
                   }
                 )
               } else {
                 logger.debug('Password does not match')
-                res.status(400).json({
+                return res.status(400).json({
                   status: 400,
                   message: 'The password does not match the emailAdress',
                 })
               }
             } else {
               logger.debug('User does not exist')
-              res.status(404).json({
+              return res.status(404).json({
                 status: 404,
                 message: 'There was no user found with this emailAdress',
               })
