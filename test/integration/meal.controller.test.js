@@ -203,7 +203,7 @@ describe('Manage meals', () => {
         })
     })
 
-    it('TC-301-3 When a token is valid, a meal should be added and returned as result', (done) => {
+    it.only('TC-301-3 When a token is valid, a meal should be added and returned as result', (done) => {
       chai
         .request(server)
         .post('/api/meal')

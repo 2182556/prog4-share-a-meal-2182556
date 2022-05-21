@@ -56,6 +56,11 @@ module.exports = {
       }
       logger.info('logged in user', req.userId)
       logger.debug(meal.allergenes.toString())
+      let date = new Date(meal.dateTime)
+        .toISOString()
+        .slice(0, 19)
+        .replace('T', ' ')
+      logger.debug(date)
 
       connection.query(
         'INSERT INTO meal (name,description,isActive,isVega,isVegan,isToTakeHome,dateTime,imageUrl,allergenes,maxAmountOfParticipants,price,cookId) VALUES(?,?,?,?,?,?,?,?,?,?,?,?);',
@@ -66,7 +71,7 @@ module.exports = {
           meal.isVega,
           meal.isVegan,
           meal.isToTakeHome,
-          `STR_TO_DATE('${meal.dateTime}', '%m-%d-%Y %H:%i:%s')`,
+          date,
           meal.imageUrl,
           meal.allergenes.toString(),
           meal.maxAmountOfParticipants,
