@@ -11,14 +11,13 @@ const mealSchema = Joi.object({
   isToTakeHome: Joi.boolean().required(),
   dateTime: Joi.string().required(),
   imageUrl: Joi.string().required(),
-  allergenes: Joi.string()
-    .required()
-    .allow('')
-    .pattern(
-      new RegExp(
-        '^(\\s*|"(gluten|noten|lactose)"(,("(gluten|noten|lactose)")){0,2})$'
-      )
-    ),
+  allergenes: Joi.array().required(),
+  // .allow('')
+  // .pattern(
+  //   new RegExp(
+  //     '^(\\s*|"(gluten|noten|lactose)"(,("(gluten|noten|lactose)")){0,2})$'
+  //   )
+  // ),
   maxAmountOfParticipants: Joi.number().required(),
   price: Joi.number().required(),
 })
@@ -56,6 +55,7 @@ module.exports = {
         next(conError)
       }
       logger.info('logged in user', req.userId)
+      logger.debug(meal.allergenes.toString())
 
       connection.query(
         'INSERT INTO meal (name,description,isActive,isVega,isVegan,isToTakeHome,dateTime,imageUrl,allergenes,maxAmountOfParticipants,price,cookId) VALUES(?,?,?,?,?,?,?,?,?,?,?,?);',
@@ -68,7 +68,7 @@ module.exports = {
           meal.isToTakeHome,
           meal.dateTime,
           meal.imageUrl,
-          meal.allergenes,
+          meal.allergenes.toString(),
           meal.maxAmountOfParticipants,
           meal.price,
           req.userId,
@@ -219,7 +219,7 @@ module.exports = {
       isToTakeHome: Joi.boolean(),
       dateTime: Joi.date(),
       imageUrl: Joi.string(),
-      allergenes: Joi.string().allow(''),
+      allergenes: Joi.array(),
     })
 
     const { error, value } = requiredFields.validate(req.body)
@@ -275,14 +275,13 @@ module.exports = {
                   isToTakeHome: Joi.boolean().default(`${meal.isToTakeHome}`),
                   dateTime: Joi.date().default(`${meal.dateTime}`),
                   imageUrl: Joi.string().default(`${meal.imageUrl}`),
-                  allergenes: Joi.string()
-                    .default(`${meal.allergenes}`)
-                    .allow('')
-                    .pattern(
-                      new RegExp(
-                        '^(//s*|"(gluten|noten|lactose)"(,("(gluten|noten|lactose)")){0,2})$'
-                      )
-                    ),
+                  allergenes: Joi.array().default(`${meal.allergenes}`),
+                  // .allow('')
+                  // .pattern(
+                  //   new RegExp(
+                  //     '^(//s*|"(gluten|noten|lactose)"(,("(gluten|noten|lactose)")){0,2})$'
+                  //   )
+                  // ),
                   maxAmountOfParticipants: Joi.number().required(),
                   price: Joi.number().required(),
                 })

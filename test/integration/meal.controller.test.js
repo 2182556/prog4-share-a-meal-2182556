@@ -88,7 +88,7 @@ describe('Manage meals', () => {
           dateTime: '2022-06-20T06:30:53.193Z',
           imageUrl:
             'https://betterchickencommitment.com/static/c4c65646cd882eb3b25feba0144c9113/ee604/white-chicken-cutout-2.png',
-          allergenes: '',
+          allergenes: [],
           maxAmountOfParticipants: 6,
           price: 6.5,
         })
@@ -112,7 +112,7 @@ describe('Manage meals', () => {
           dateTime: '2022-06-20T06:30',
           imageUrl:
             'https://betterchickencommitment.com/static/c4c65646cd882eb3b25feba0144c9113/ee604/white-chicken-cutout-2.png',
-          allergenes: '',
+          allergenes: [],
           maxAmountOfParticipants: 6,
           price: 6.5,
         })
@@ -137,7 +137,7 @@ describe('Manage meals', () => {
           dateTime: '2022-05-20T06:30:53.193Z',
           imageUrl:
             'https://betterchickencommitment.com/static/c4c65646cd882eb3b25feba0144c9113/ee604/white-chicken-cutout-2.png',
-          allergenes: '',
+          allergenes: [],
           price: 6.5,
         })
         .end((err, res) => {
@@ -162,7 +162,7 @@ describe('Manage meals', () => {
           isToTakeHome: false,
           imageUrl:
             'https://betterchickencommitment.com/static/c4c65646cd882eb3b25feba0144c9113/ee604/white-chicken-cutout-2.png',
-          allergenes: '',
+          allergenes: [],
           maxAmountOfParticipants: 6,
           price: 6.5,
         })
@@ -190,7 +190,7 @@ describe('Manage meals', () => {
           dateTime: '2022-05-20T06:30:53.193Z',
           imageUrl:
             'https://betterchickencommitment.com/static/c4c65646cd882eb3b25feba0144c9113/ee604/white-chicken-cutout-2.png',
-          allergenes: '',
+          allergenes: [],
           maxAmountOfParticipants: 6,
           price: 6.5,
         })
@@ -218,7 +218,7 @@ describe('Manage meals', () => {
           dateTime: '2022-06-20T06:30',
           imageUrl:
             'https://betterchickencommitment.com/static/c4c65646cd882eb3b25feba0144c9113/ee604/white-chicken-cutout-2.png',
-          allergenes: '',
+          allergenes: [],
           maxAmountOfParticipants: 6,
           price: 6.5,
         })
@@ -252,7 +252,7 @@ describe('Manage meals', () => {
           dateTime: '2022-05-20T06:30:53.193Z',
           imageUrl:
             'https://betterchickencommitment.com/static/c4c65646cd882eb3b25feba0144c9113/ee604/white-chicken-cutout-2.png',
-          allergenes: '',
+          allergenes: [],
           maxAmountOfParticipants: 6,
           price: 6.5,
         })
@@ -278,7 +278,7 @@ describe('Manage meals', () => {
           dateTime: '2022-05-20T06:30:53.193Z',
           imageUrl:
             'https://betterchickencommitment.com/static/c4c65646cd882eb3b25feba0144c9113/ee604/white-chicken-cutout-2.png',
-          allergenes: '',
+          allergenes: [],
           maxAmountOfParticipants: 6,
         })
         .end((err, res) => {
@@ -303,7 +303,7 @@ describe('Manage meals', () => {
           dateTime: '2022-05-20T06:30:53.193Z',
           imageUrl:
             'https://betterchickencommitment.com/static/c4c65646cd882eb3b25feba0144c9113/ee604/white-chicken-cutout-2.png',
-          allergenes: '',
+          allergenes: [],
           price: 6.5,
         })
         .end((err, res) => {
