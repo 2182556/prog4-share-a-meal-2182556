@@ -38,8 +38,7 @@ module.exports = {
         message: error.message,
       })
     } else {
-      const queryString =
-        'SELECT `id`, `firstName`, `lastName`, `password`, `isActive` FROM `user` WHERE `emailAdress`=?'
+      const queryString = 'SELECT * FROM `user` WHERE `emailAdress`=?'
 
       dbconnection.getConnection(function (err, connection) {
         if (err) {

@@ -41,6 +41,7 @@ module.exports = {
   },
   addMeal: (req, res, next) => {
     console.log('addMeal called')
+    logger.debug(req.body)
     let meal = req.validatedMeal
     logger.info(meal)
 
@@ -202,6 +203,26 @@ module.exports = {
   },
   updateMeal: (req, res, next) => {
     logger.info('updateMeal called')
+    logger.debug(req.body)
+
+    const requiredFields = Joi.object({
+      name: Joi.string().required(),
+      maxAmountOfParticipants: Joi.number().required(),
+      price: Joi.number().required(),
+    })
+
+    const { error, value } = requiredFields.validate(req.body)
+    logger.debug(value.allergenes)
+    const newDateTime = new Date(value.dateTime)
+    logger.debug(newDateTime)
+    if (error) {
+      const err = {
+        status: 400,
+        message: error.message,
+      }
+      next(err)
+    }
+
     const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
       if (err) {

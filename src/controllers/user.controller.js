@@ -23,9 +23,8 @@ const userSchema = Joi.object({
         'Password should be at least 8 characters, contain one capital letter and one number',
     }),
   phoneNumber: Joi.string()
-    .pattern(new RegExp('^(?=^.{9,}$)[+]?[0-9]+[ -]?[0-9]+$'))
+    .pattern(new RegExp('^(?=^.{10,}$)[+]?[0-9]+[ -]?[0-9]+$'))
     .required()
-    .default('+31 612345678')
     .messages({
       'string.pattern.base':
         "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",
@@ -383,15 +382,32 @@ module.exports = {
                   firstName: Joi.string().default(`${user.firstName}`),
                   lastName: Joi.string().default(`${user.lastName}`),
                   emailAdress: Joi.string()
-                    .email({
-                      minDomainSegments: 2,
-                    })
-                    .default(`${user.emailAdress}`),
+                    .email()
+                    .default(`${user.emailAdress}`)
+                    .pattern(
+                      new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')
+                    ),
                   street: Joi.string().default(`${user.street}`),
                   city: Joi.string().default(`${user.city}`),
                   isActive: Joi.boolean().default(`${user.isActive}`),
-                  password: Joi.string().default(`${user.password}`),
-                  phoneNumber: Joi.string().default(`${user.phoneNumber}`),
+                  password: Joi.string()
+                    .default(`${user.password}`)
+                    .pattern(
+                      new RegExp(
+                        '(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$'
+                      )
+                    )
+                    .messages({
+                      'string.pattern.base':
+                        'Password should be at least 8 characters, contain one capital letter and one number',
+                    }),
+                  phoneNumber: Joi.string()
+                    .default(`${user.phoneNumber}`)
+                    .pattern(new RegExp('^(?=^.{10,}$)[+]?[0-9]+[ -]?[0-9]+$'))
+                    .messages({
+                      'string.pattern.base':
+                        "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",
+                    }),
                   roles: Joi.string().default(`${user.phoneNumber}`),
                 })
                 const { error, value } = userSchema.validate(req.body)
