@@ -66,7 +66,7 @@ module.exports = {
           meal.isVega,
           meal.isVegan,
           meal.isToTakeHome,
-          `STR_TO_DATE(${meal.dateTime}, '%m-%d-%Y %H:%i:%s')`,
+          `STR_TO_DATE('${meal.dateTime}', '%m-%d-%Y %H:%i:%s')`,
           meal.imageUrl,
           meal.allergenes.toString(),
           meal.maxAmountOfParticipants,
