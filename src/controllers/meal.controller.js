@@ -396,4 +396,5 @@ module.exports = {
       )
     })
   },
+  participate: (req, res, next) => {},
 }

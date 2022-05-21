@@ -22,4 +22,10 @@ router.delete(
   mealController.deleteMeal
 )
 
+router.get(
+  '/meal/:id/participate',
+  authController.validateToken,
+  mealController.participate
+)
+
 module.exports = router
