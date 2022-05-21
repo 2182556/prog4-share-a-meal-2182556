@@ -68,11 +68,11 @@ The columns in italics cannot be given in a request body. id can however be give
 
 
 ## Routes
-| REQUEST        | Route           | Required header  | Required keys in body |
-| ------------- |:-------------:| -----:|
-| POST     | /api/auth/login |  | emailAdress; password |
-| POST    | /api/user      |    | firstName; lastName; emailAdress; password; street; city; phoneNumber |
-| zebra stripes | are neat      |    $1 | |
+| REQUEST    | Route          | Required header  | Required keys in body |
+| ----------|:---------------:| ----------------:|----------------------:|
+| POST      | /api/auth/login |                  | emailAdress; password |
+| POST      | /api/user       |                  | firstName; lastName; emailAdress; password; street; city; phoneNumber |
+| POSt      | are neat        |    $1            | |
 
 ## Badges
 On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
