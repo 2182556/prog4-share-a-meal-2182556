@@ -32,10 +32,6 @@ router.put(
   userController.updateUser
 )
 
-router.delete('/user/all', userController.deleteAll)
-
-router.post('/user/all', userController.addAll)
-
 router.delete(
   '/user/:id',
   authController.validateToken,
