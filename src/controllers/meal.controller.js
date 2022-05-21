@@ -209,18 +209,28 @@ module.exports = {
       name: Joi.string().required(),
       maxAmountOfParticipants: Joi.number().required(),
       price: Joi.number().required(),
+      description: Joi.string(),
+      isActive: Joi.boolean(),
+      isVega: Joi.boolean(),
+      isVegan: Joi.boolean(),
+      isToTakeHome: Joi.boolean(),
+      dateTime: Joi.date(),
+      imageUrl: Joi.string(),
+      allergenes: Joi.string().allow(''),
     })
 
     const { error, value } = requiredFields.validate(req.body)
-    logger.debug(value.allergenes)
-    const newDateTime = new Date(value.dateTime)
-    logger.debug(newDateTime)
     if (error) {
-      const err = {
+      // const err = {
+      //   status: 400,
+      //   message: error.message,
+      // }
+      // next(err)
+      logger.error(error.message)
+      return res.status(400).json({
         status: 400,
         message: error.message,
-      }
-      next(err)
+      })
     }
 
     const id = req.params.id

@@ -319,6 +319,12 @@ describe('Manage meals', () => {
         .put('/api/meal/1')
         //no token
         .set('authorization', 'Bearer ' + ' ')
+        .send({
+          name: 'A new meal name',
+          description: 'A new meal description',
+          maxAmountOfParticipants: 6,
+          price: 6.5,
+        })
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
@@ -333,6 +339,12 @@ describe('Manage meals', () => {
         .request(server)
         .put('/api/meal/2')
         .set('authorization', 'Bearer ' + token)
+        .send({
+          name: 'A new meal name',
+          description: 'A new meal description',
+          maxAmountOfParticipants: 6,
+          price: 6.5,
+        })
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
@@ -349,6 +361,12 @@ describe('Manage meals', () => {
         .request(server)
         .put('/api/meal/0')
         .set('authorization', 'Bearer ' + token)
+        .send({
+          name: 'A new meal name',
+          description: 'A new meal description',
+          maxAmountOfParticipants: 6,
+          price: 6.5,
+        })
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
