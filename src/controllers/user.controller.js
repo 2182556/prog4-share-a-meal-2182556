@@ -96,6 +96,48 @@ module.exports = {
       next()
     }
   },
+  checkIfUserExists: (req, res, next) => {
+    dbconnection.getConnection(function (err, connection) {
+      if (err) {
+        const conError = {
+          status: 500,
+          message: err.sqlMessage,
+        }
+        next(conError)
+      }
+
+      connection.query(
+        `SELECT * FROM user WHERE id=?;`,
+        [req.params.id],
+        function (error, results, fields) {
+          connection.release()
+          if (error) {
+            const err = {
+              status: 500,
+              message: error.sqlMessage,
+            }
+            next(err)
+          } else {
+            console.log('results = ', results.length)
+            if (results.length > 0) {
+              req.existingUser = Object.assign({}, results[0])
+              next()
+            } else {
+              const error = {
+                status: 400,
+                message: `User does not exist`,
+              }
+              next(error)
+            }
+          }
+
+          // dbconnection.end((err) => {
+          //   console.log("Pool was closed.");
+          // });
+        }
+      )
+    })
+  },
   addUser: (req, res, next) => {
     let user = req.validatedUser
     console.log('addUser called')
@@ -350,6 +392,7 @@ module.exports = {
   updateUser: (req, res, next) => {
     logger.info('updateUser called')
     const id = req.params.id
+
     dbconnection.getConnection(function (err, connection) {
       if (err) {
         const conError = {
@@ -359,132 +402,107 @@ module.exports = {
         next(conError)
       }
 
-      connection.query(
-        `SELECT * FROM user WHERE id=?;`,
-        [id],
-        function (error, results, fields) {
-          connection.release()
-          if (error) {
-            const err = {
-              status: 500,
-              message: error.sqlMessage,
-            }
-            next(err)
-          } else {
-            console.log('results = ', results.length)
-            if (results.length > 0) {
-              if (id == req.userId) {
-                console.log(results[0])
-                var user = Object.assign({}, results[0])
-                console.log(user)
-                const updateUserSchema = Joi.object({
-                  id: Joi.number().integer().default(`${user.id}`),
-                  firstName: Joi.string().default(`${user.firstName}`),
-                  lastName: Joi.string().default(`${user.lastName}`),
-                  emailAdress: Joi.string()
-                    .email()
-                    .default(`${user.emailAdress}`)
-                    .pattern(
-                      new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')
-                    ),
-                  street: Joi.string().default(`${user.street}`),
-                  city: Joi.string().default(`${user.city}`),
-                  isActive: Joi.boolean().default(`${user.isActive}`),
-                  password: Joi.string()
-                    .default(`${user.password}`)
-                    .pattern(
-                      new RegExp(
-                        '(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$'
-                      )
-                    )
-                    .messages({
-                      'string.pattern.base':
-                        'Password should be at least 8 characters, contain one capital letter and one number',
-                    }),
-                  phoneNumber: Joi.string()
-                    .default(`${user.phoneNumber}`)
-                    .pattern(new RegExp('^(?=^.{10,}$)[+]?[0-9]+[ -]?[0-9]+$'))
-                    .messages({
-                      'string.pattern.base':
-                        "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",
-                    }),
-                  roles: Joi.string().default(`${user.phoneNumber}`),
-                })
-                const { error, value } = userSchema.validate(req.body)
-                if (error) {
-                  const err = {
-                    status: 400,
-                    message: error.message,
-                  }
-                  next(err)
-                } else {
-                  console.log(value)
-                  connection.query(
-                    `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
-                    [
-                      value.firstName,
-                      value.lastName,
-                      value.isActive,
-                      value.emailAdress,
-                      value.password,
-                      value.phoneNumber,
-                      value.roles,
-                      value.street,
-                      value.city,
-                      id,
-                    ],
-                    function (error, results, fields) {
-                      connection.release()
-
-                      if (error) {
-                        const err = {
-                          status: 500,
-                          message: error.sqlMessage,
-                        }
-                        next(err)
-                      } else {
-                        logger.info(user.id)
-                        let updatedUser = {
-                          id: user.id,
-                          isActive: value.isActive ? true : false,
-                          ...value,
-                        }
-                        console.log(updatedUser)
-                        res.status(200).json({
-                          status: 200,
-                          result: updatedUser,
-                        })
-                      }
-                    }
-                  )
-                }
-              } else {
-                logger.info('id does not match')
-                res.status(401).json({
-                  status: 401,
-                  message: 'You are not authorized to update this user',
-                })
-              }
-            } else {
-              const error = {
-                status: 400,
-                message: `User does not exist`,
-              }
-              next(error)
-            }
+      if (id == req.userId) {
+        console.log(req.existingUser)
+        var user = req.existingUser
+        console.log(user)
+        const updateUserSchema = Joi.object({
+          id: Joi.number().integer().default(`${user.id}`),
+          firstName: Joi.string().default(`${user.firstName}`),
+          lastName: Joi.string().default(`${user.lastName}`),
+          emailAdress: Joi.string()
+            .email()
+            .default(`${user.emailAdress}`)
+            .pattern(new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')),
+          street: Joi.string().default(`${user.street}`),
+          city: Joi.string().default(`${user.city}`),
+          isActive: Joi.boolean().default(`${user.isActive}`),
+          password: Joi.string()
+            .default(`${user.password}`)
+            .pattern(
+              new RegExp(
+                '(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$'
+              )
+            )
+            .messages({
+              'string.pattern.base':
+                'Password should be at least 8 characters, contain one capital letter and one number',
+            }),
+          phoneNumber: Joi.string()
+            .default(`${user.phoneNumber}`)
+            .pattern(new RegExp('^(?=^.{10,}$)[+]?[0-9]+[ -]?[0-9]+$'))
+            .messages({
+              'string.pattern.base':
+                "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",
+            }),
+          roles: Joi.string().default(`${user.phoneNumber}`),
+        })
+        const { error, value } = userSchema.validate(req.body)
+        if (error) {
+          const err = {
+            status: 400,
+            message: error.message,
           }
+          next(err)
+        } else {
+          console.log(value)
+          connection.query(
+            `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
+            [
+              value.firstName,
+              value.lastName,
+              value.isActive,
+              value.emailAdress,
+              value.password,
+              value.phoneNumber,
+              value.roles,
+              value.street,
+              value.city,
+              id,
+            ],
+            function (error, results, fields) {
+              connection.release()
 
-          // dbconnection.end((err) => {
-          //   console.log("Pool was closed.");
-          // });
+              if (error) {
+                const err = {
+                  status: 500,
+                  message: error.sqlMessage,
+                }
+                next(err)
+              } else {
+                logger.info(user.id)
+                let updatedUser = {
+                  id: user.id,
+                  isActive: value.isActive ? true : false,
+                  ...value,
+                }
+                console.log(updatedUser)
+                res.status(200).json({
+                  status: 200,
+                  result: updatedUser,
+                })
+              }
+            }
+          )
         }
-      )
+      } else {
+        logger.info('id does not match')
+        res.status(401).json({
+          status: 401,
+          message: 'You are not authorized to update this user',
+        })
+      }
+
+      // dbconnection.end((err) => {
+      //   console.log("Pool was closed.");
+      // });
     })
   },
   deleteUser: (req, res, next) => {
     const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
       if (err) {
+        logger.debug(err.sqlMessage)
         const conError = {
           status: 500,
           message: err.sqlMessage,
@@ -492,60 +510,41 @@ module.exports = {
         next(conError)
       }
 
-      connection.query(
-        `SELECT * FROM user WHERE id=${id};`,
-        function (error, results, fields) {
-          connection.release()
-          if (error) {
-            const err = {
-              status: 500,
-              message: error.sqlMessage,
-            }
-            next(err)
-          } else {
-            console.log('results = ', results.length)
-            if (results.length > 0) {
-              if (id == req.userId) {
-                connection.query(
-                  `DELETE FROM user WHERE id=${id};`,
-                  function (error, results, fields) {
-                    // console.log(error);
-                    // console.log(error.sqlMessage);
-                    if (error) {
-                      console.log(error.sqlMessage)
-                      const err = {
-                        status: 500,
-                        message: error.sqlMessage,
-                      }
-                      next(err)
-                    } else {
-                      console.log('deleted')
-                      res.status(200).json({
-                        status: 200,
-                        message: `User with id ${id} was deleted.`,
-                      })
-                    }
-                  }
-                )
-              } else {
-                res.status(403).json({
-                  status: 403,
-                  message: `You are not authorized to delete this user`,
-                })
+      if (id == req.userId) {
+        logger.info('id matches')
+        connection.query(
+          `DELETE FROM user WHERE id=${id};`,
+          function (error, results, fields) {
+            connection.release()
+            // console.log(error);
+            // console.log(error.sqlMessage);
+            if (error) {
+              console.log(error.sqlMessage)
+              const err = {
+                status: 500,
+                message: error.sqlMessage,
               }
-
-              // dbconnection.end((err) => {
-              //   console.log("Pool was closed.");
-              // });
+              next(err)
             } else {
-              res.status(400).json({
-                status: 400,
-                message: `User does not exist`,
+              console.log('deleted')
+              res.status(200).json({
+                status: 200,
+                message: `User with id ${id} was deleted.`,
               })
             }
           }
-        }
-      )
+        )
+      } else {
+        logger.info('id does not match')
+        res.status(403).json({
+          status: 403,
+          message: 'You are not authorized to delete this user',
+        })
+      }
+
+      // dbconnection.end((err) => {
+      //   console.log("Pool was closed.");
+      // });
     })
   },
   //for debugging only

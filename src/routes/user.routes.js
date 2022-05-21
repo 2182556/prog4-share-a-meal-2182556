@@ -27,6 +27,7 @@ router.get(
 router.put(
   '/user/:id',
   authController.validateToken,
+  userController.checkIfUserExists,
   userController.checkUniqueEmail,
   userController.updateUser
 )
@@ -38,6 +39,7 @@ router.put(
 router.delete(
   '/user/:id',
   authController.validateToken,
+  userController.checkIfUserExists,
   userController.deleteUser
 )
 

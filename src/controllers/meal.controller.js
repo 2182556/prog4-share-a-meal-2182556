@@ -26,6 +26,7 @@ const mealSchema = Joi.object({
 module.exports = {
   validateMeal: (req, res, next) => {
     logger.info('validateMeal called')
+    logger.debug(req.body)
 
     const { error, value } = mealSchema.validate(req.body)
     if (error == undefined) {
@@ -73,6 +74,7 @@ module.exports = {
           req.userId,
         ],
         function (error, results, fields) {
+          connection.release()
           logger.info(results)
 
           if (error) {
@@ -100,6 +102,7 @@ module.exports = {
                   'INSERT INTO meal_participants_user VALUES (?,?)',
                   [results[0].mealId, req.userId],
                   function (error, results, fields) {
+                    connection.release()
                     if (error) throw error
                   }
                 )
@@ -390,6 +393,7 @@ module.exports = {
                 connection.query(
                   `DELETE FROM meal WHERE id=${id};`,
                   function (error, results, fields) {
+                    connection.release()
                     if (error) {
                       console.log(error.sqlMessage)
                       const err = {
@@ -442,6 +446,7 @@ module.exports = {
         'SELECT * FROM meal WHERE id=?',
         [req.params.id],
         function (error, results, fields) {
+          connection.release()
           if (error) throw error
           if (results.length == 0) {
             res.status(404).json({
@@ -453,6 +458,7 @@ module.exports = {
               'SELECT * FROM meal_participants_user WHERE mealId=?',
               [req.params.id],
               function (error, results, fields) {
+                connection.release()
                 if (error) throw error
                 let numberOfParticipants = results.length
                 participating = false
@@ -464,6 +470,7 @@ module.exports = {
                     'DELETE FROM meal_participants_user WHERE mealId=? AND userId=?',
                     [req.params.id, req.userId],
                     function (error, results, fields) {
+                      connection.release()
                       if (error) throw error
                       if (results.affectedRows > 0) {
                         res.status(200).json({
@@ -482,6 +489,7 @@ module.exports = {
                     'INSERT INTO meal_participants_user VALUES (?,?)',
                     [req.params.id, req.userId],
                     function (error, results, fields) {
+                      connection.release()
                       if (error) throw error
                       if (results.affectedRows > 0) {
                         let participate = {}

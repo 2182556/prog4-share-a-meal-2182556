@@ -38,23 +38,27 @@ describe('Manage users', () => {
       if (err) throw err
 
       connection.query(CLEAR_MEALS_TABLE, function (error, results, fields) {
+        connection.release()
         if (error) throw error
       })
       connection.query(
         CLEAR_PARTICIPANTS_TABLE,
         function (error, results, fields) {
+          connection.release()
           if (error) throw error
         }
       )
       connection.query(CLEAR_USERS_TABLE, function (error, results, fields) {
+        connection.release()
         if (error) throw error
       })
       connection.query(INSERT_USERS, function (error, results, fields) {
+        connection.release()
         if (error) throw error
       })
       connection.query(INSERT_MEALS, function (error, results, fields) {
-        if (error) throw error
         connection.release()
+        if (error) throw error
         done()
       })
     })
@@ -799,16 +803,18 @@ describe('Manage users', () => {
         if (err) throw err
 
         connection.query(CLEAR_MEALS_TABLE, function (error, results, fields) {
+          connection.release()
           if (error) throw error
         })
         connection.query(
           CLEAR_PARTICIPANTS_TABLE,
           function (error, results, fields) {
+            connection.release()
             if (error) throw error
+            done()
           }
         )
       })
-      done()
     })
     it('TC-206-1 When a user does not exist an error should be returned', (done) => {
       chai
