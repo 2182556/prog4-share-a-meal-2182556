@@ -3,32 +3,27 @@ const dbconnection = require('../../database/dbconnection')
 const Joi = require('joi')
 const { logger } = require('../config/config')
 
+const emailRegExp = new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')
+const passwordRegExp = new RegExp(
+  '(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$'
+)
+const phoneNumberRegExp = new RegExp('^(?=^.{10,}$)(\\+|0)[0-9]+[ -]?[0-9]+$')
+
 const userSchema = Joi.object({
   firstName: Joi.string().required(),
   lastName: Joi.string().required(),
-  emailAdress: Joi.string()
-    .required()
-    .email()
-    .pattern(new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')),
+  emailAdress: Joi.string().required().email().pattern(emailRegExp),
   street: Joi.string().required().default(''),
   city: Joi.string().required().default(''),
-  isActive: Joi.boolean().required().default('true'),
-  password: Joi.string()
-    .required()
-    .pattern(
-      new RegExp('(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$')
-    )
-    .messages({
-      'string.pattern.base':
-        'Password should be at least 8 characters, contain one capital letter and one number',
-    }),
-  phoneNumber: Joi.string()
-    .pattern(new RegExp('^(?=^.{10,}$)[+]?[0-9]+[ -]?[0-9]+$'))
-    .required()
-    .messages({
-      'string.pattern.base':
-        "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",
-    }),
+  isActive: Joi.boolean().required().default(true),
+  password: Joi.string().required().pattern(passwordRegExp).messages({
+    'string.pattern.base':
+      'Password should be at least 8 characters, contain one capital letter and one number',
+  }),
+  phoneNumber: Joi.string().pattern(phoneNumberRegExp).required().messages({
+    'string.pattern.base':
+      "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",
+  }),
   roles: Joi.string().default('editor,guest'),
 })
 
@@ -198,7 +193,7 @@ module.exports = {
                   if (results.length > 0) id = results[0].id
                   user = {
                     id: id,
-                    isActive: user.isActive ? true : fals,
+                    isActive: user.isActive ? true : false,
                     ...user,
                   }
                   res.status(201).json({
@@ -279,9 +274,7 @@ module.exports = {
           } else {
             console.log('results = ', results.length)
             results.forEach((i) => {
-              logger.debug(i.isActive)
               i.isActive = i.isActive ? true : false
-              logger.debug(i.isActive)
             })
             res.status(200).json({
               status: 200,
@@ -414,24 +407,20 @@ module.exports = {
           emailAdress: Joi.string()
             .email()
             .default(`${user.emailAdress}`)
-            .pattern(new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')),
+            .pattern(emailRegExp),
           street: Joi.string().default(`${user.street}`),
           city: Joi.string().default(`${user.city}`),
           isActive: Joi.boolean().default(`${user.isActive}`),
           password: Joi.string()
             .default(`${user.password}`)
-            .pattern(
-              new RegExp(
-                '(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$'
-              )
-            )
+            .pattern(passwordRegExp)
             .messages({
               'string.pattern.base':
                 'Password should be at least 8 characters, contain one capital letter and one number',
             }),
           phoneNumber: Joi.string()
             .default(`${user.phoneNumber}`)
-            .pattern(new RegExp('^(?=^.{10,}$)[+]?[0-9]+[ -]?[0-9]+$'))
+            .pattern(phoneNumberRegExp)
             .messages({
               'string.pattern.base':
                 "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",

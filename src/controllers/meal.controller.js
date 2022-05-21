@@ -6,8 +6,8 @@ const mealSchema = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().required(),
   isActive: Joi.boolean().required(),
-  isVega: Joi.boolean().default('true'),
-  isVegan: Joi.boolean().default('true'),
+  isVega: Joi.boolean().default(true),
+  isVegan: Joi.boolean().default(true),
   isToTakeHome: Joi.boolean().required(),
   dateTime: Joi.string().required(),
   imageUrl: Joi.string().required(),
@@ -149,6 +149,12 @@ module.exports = {
           next(err)
         } else {
           console.log('results = ', results.length)
+          results.forEach((i) => {
+            i.isActive = i.isActive ? true : false
+            i.isToTakeHome = i.isToTakeHome ? true : false
+            i.isVega = i.isVega ? true : false
+            i.isVegan = i.isVegan ? true : false
+          })
           res.status(200).json({
             status: 200,
             result: results,
@@ -189,6 +195,10 @@ module.exports = {
             console.log('results = ', results.length)
             if (results.length > 0) {
               console.log(results)
+              results[0].isActive = results[0].isActive ? true : false
+              results[0].isToTakeHome = results[0].isToTakeHome ? true : false
+              results[0].isVega = results[0].isVega ? true : false
+              results[0].isVegan = results[0].isVegan ? true : false
               res.status(200).json({
                 status: 200,
                 result: results[0],
@@ -244,6 +254,7 @@ module.exports = {
     const id = req.params.id
     dbconnection.getConnection(function (err, connection) {
       if (err) {
+        logger.error(err.message)
         const conError = {
           status: 500,
           message: err.sqlMessage,
@@ -257,6 +268,7 @@ module.exports = {
         function (error, results, fields) {
           connection.release()
           if (error) {
+            logger.error(err.message)
             const err = {
               status: 500,
               message: error.sqlMessage,
@@ -296,6 +308,7 @@ module.exports = {
                 const newDateTime = new Date(value.dateTime)
                 logger.debug(newDateTime)
                 if (error) {
+                  logger.error(error.message)
                   const err = {
                     status: 400,
                     message: error.message,
@@ -329,11 +342,16 @@ module.exports = {
                         //   message: error.sqlMessage,
                         // }
                         // next(err)
+                        logger.error(error.sqlMessage)
                         res.status(500).json({
                           status: 500,
                           message: error.sqlMessage,
                         })
                       } else {
+                        value.isActive = value.isActive ? true : false
+                        value.isToTakeHome = value.isToTakeHome ? true : false
+                        value.isVega = value.isVega ? true : false
+                        value.isVegan = value.isVegan ? true : false
                         let meal = {
                           id: id,
                           cookId: req.userId,
