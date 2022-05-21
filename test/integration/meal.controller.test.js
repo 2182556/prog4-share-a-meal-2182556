@@ -26,7 +26,11 @@ const INSERT_USERS =
 const INSERT_MEALS =
   'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`, `allergenes` ) VALUES' +
   "(1, 'Meal A', 'description', 'image url', '2022-06-22 17:35:00', 5, 6.50, 1, 'lactose,gluten')," +
-  "(2, 'Meal B', 'description', 'image url', '2022-07-22 18:00:00', 5, 6.50, 2, '');"
+  "(2, 'Meal B', 'description', 'image url', '2022-06-22 17:35:00', 5, 6.50, 2, 'noten')," +
+  "(3, 'Meal C', 'description', 'image url', '2022-07-22 18:00:00', 5, 6.50, 2, '');"
+
+const INSERT_PARTICIPATION =
+  'INSERT INTO `meal_participants_user` VALUES (1,1), (2,2), (3,2), (3,1); '
 
 describe('Manage meals', () => {
   before((done) => {
@@ -53,6 +57,9 @@ describe('Manage meals', () => {
         if (error) throw error
       })
       connection.query(INSERT_MEALS, function (error, results, fields) {
+        if (error) throw error
+      })
+      connection.query(INSERT_PARTICIPATION, function (error, results, fields) {
         if (error) throw error
         connection.release()
         done()
@@ -430,7 +437,7 @@ describe('Manage meals', () => {
     it('TC-305-2 When a user is not logged in, an authorization error should be returned', (done) => {
       chai
         .request(server)
-        .delete('/api/user/1')
+        .delete('/api/meal/1')
         //no header
         .end((err, res) => {
           res.should.be.an('object')
@@ -442,7 +449,7 @@ describe('Manage meals', () => {
         })
       chai
         .request(server)
-        .delete('/api/user/1')
+        .delete('/api/meal/1')
         // no token
         .set('authorization', 'Bearer ' + ' ')
         .end((err, res) => {
@@ -497,6 +504,132 @@ describe('Manage meals', () => {
           message.should.be
             .a('string')
             .that.equals('Meal with id 1 was deleted.')
+          done()
+        })
+    })
+  })
+
+  describe('UC-401 Add participation for meal /api/meal/:id/participate', () => {
+    it('TC-401-1 When a user is not logged in, an authorization error should be returned', (done) => {
+      chai
+        .request(server)
+        .get('/api/meal/2/participate')
+        //no header
+        .end((err, res) => {
+          res.should.be.an('object')
+          let { status, message } = res.body
+          status.should.equal(401)
+          message.should.be
+            .a('string')
+            .that.equals('Authorization header missing')
+        })
+      chai
+        .request(server)
+        .get('/api/meal/2/participate')
+        // no token
+        .set('authorization', 'Bearer ' + ' ')
+        .end((err, res) => {
+          res.should.be.an('object')
+          let { status, message } = res.body
+          status.should.equal(401)
+          message.should.be.a('string').that.equals('Not authorized')
+          done()
+        })
+    })
+
+    it('TC-401-2 When a meal does not exist an error should be returned', (done) => {
+      chai
+        .request(server)
+        .get('/api/meal/0/participate')
+        .set('authorization', 'Bearer ' + token)
+        .end((err, res) => {
+          res.should.be.an('object')
+          let { status, message } = res.body
+          status.should.equal(404)
+          message.should.be.a('string').that.equals('Meal does not exist')
+          done()
+        })
+    })
+
+    it('TC-401-3 Participation succesfully added', (done) => {
+      chai
+        .request(server)
+        .get('/api/meal/2/participate')
+        .set('authorization', 'Bearer ' + token)
+        .end((err, res) => {
+          res.should.be.an('object')
+          let { status, result } = res.body
+          status.should.equal(200)
+          result.should.be
+            .an('object')
+            .that.includes.keys(
+              'currentlyParticipating',
+              'currentAmountOfParticipants'
+            )
+          result.should.include({ currentlyParticipating: true })
+          done()
+        })
+    })
+  })
+
+  describe('UC-402 Remove participation from meal /api/meal/:id/participate', () => {
+    it('TC-402-1 When a user is not logged in, an authorization error should be returned', (done) => {
+      chai
+        .request(server)
+        .get('/api/meal/2/participate')
+        //no header
+        .end((err, res) => {
+          res.should.be.an('object')
+          let { status, message } = res.body
+          status.should.equal(401)
+          message.should.be
+            .a('string')
+            .that.equals('Authorization header missing')
+        })
+      chai
+        .request(server)
+        .get('/api/meal/2/participate')
+        // no token
+        .set('authorization', 'Bearer ' + ' ')
+        .end((err, res) => {
+          res.should.be.an('object')
+          let { status, message } = res.body
+          status.should.equal(401)
+          message.should.be.a('string').that.equals('Not authorized')
+          done()
+        })
+    })
+
+    it('TC-402-2 When a meal does not exist an error should be returned', (done) => {
+      chai
+        .request(server)
+        .get('/api/meal/0/participate')
+        .set('authorization', 'Bearer ' + token)
+        .end((err, res) => {
+          res.should.be.an('object')
+          let { status, message } = res.body
+          status.should.equal(404)
+          message.should.be.a('string').that.equals('Meal does not exist')
+          done()
+        })
+    })
+
+    it('TC-402-3 Participation succesfully removed', (done) => {
+      chai
+        .request(server)
+        .get('/api/meal/3/participate')
+        .set('authorization', 'Bearer ' + token)
+        .end((err, res) => {
+          res.should.be.an('object')
+          let { status, result } = res.body
+          status.should.equal(200)
+          result.should.be
+            .an('object')
+            .that.includes.keys(
+              'currentlyParticipating',
+              'currentAmountOfParticipants'
+            )
+          result.should.include({ currentlyParticipating: false })
           done()
         })
     })

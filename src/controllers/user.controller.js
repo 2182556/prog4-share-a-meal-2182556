@@ -157,6 +157,7 @@ module.exports = {
                   if (results.length > 0) id = results[0].id
                   user = {
                     id: id,
+                    isActive: user.isActive ? true : fals,
                     ...user,
                   }
                   res.status(201).json({
@@ -190,8 +191,7 @@ module.exports = {
       'city',
     ]
     let queryString =
-      'SELECT id, firstName, lastName, IF(isActive, true, false) isActive, emailAdress, phoneNumber, roles, street, city FROM user'
-    // let queryString = 'SELECT * FROM user'
+      'SELECT id, firstName, lastName, isActive, emailAdress, phoneNumber, roles, street, city FROM user'
     let queryParams = []
     if (Object.keys(req.query).length > 0) {
       queryString += ' WHERE '
@@ -199,16 +199,17 @@ module.exports = {
       for (p in req.query) {
         if (allowedParams.includes(p)) {
           if (i > 0) queryString += ' AND '
-          if (p == 'isActive') {
-            if (req.query[p].boolean) {
-              queryString += 'isActive=1'
-            } else {
-              queryString += 'isActive=0'
-            }
-          } else {
-            queryString += `${p}=?`
-            queryParams.push(req.query[p])
-          }
+          // if (p == 'isActive') {
+          //   if (req.query[p]) {
+          //     queryString += 'isActive=1'
+          //   } else {
+          //     queryString += 'isActive=0'
+          //   }
+          // } else {
+          queryString += `${p}=?`
+          if (p == 'isActive') queryParams.push(req.query[p] === 'true')
+          else queryParams.push(req.query[p])
+          // }
 
           i++
         }
@@ -236,6 +237,11 @@ module.exports = {
             next(err)
           } else {
             console.log('results = ', results.length)
+            results.forEach((i) => {
+              logger.debug(i.isActive)
+              i.isActive = i.isActive ? true : false
+              logger.debug(i.isActive)
+            })
             res.status(200).json({
               status: 200,
               result: results,
@@ -273,6 +279,7 @@ module.exports = {
           } else {
             console.log('results = ', results.length)
             if (results && results.length == 1) {
+              results[0].isActive = results[0].isActive ? true : false
               res.status(200).json({
                 status: 200,
                 result: results[0],
@@ -320,6 +327,7 @@ module.exports = {
             console.log('results = ', results.length)
             if (results.length > 0) {
               console.log(results)
+              results[0].isActive = results[0].isActive ? true : false
               res.status(200).json({
                 status: 200,
                 result: results[0],
@@ -422,6 +430,7 @@ module.exports = {
                         logger.info(user.id)
                         let updatedUser = {
                           id: user.id,
+                          isActive: value.isActive ? true : false,
                           ...value,
                         }
                         console.log(updatedUser)

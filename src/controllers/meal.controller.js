@@ -396,5 +396,81 @@ module.exports = {
       )
     })
   },
-  participate: (req, res, next) => {},
+  participate: (req, res, next) => {
+    dbconnection.getConnection(function (err, connection) {
+      if (err) {
+        logger.error('connection error')
+        const conError = {
+          status: 500,
+          message: err.sqlMessage,
+        }
+        next(conError)
+      }
+
+      connection.query(
+        'SELECT * FROM meal WHERE id=?',
+        [req.params.id],
+        function (error, results, fields) {
+          if (error) throw error
+          if (results.length == 0) {
+            res.status(404).json({
+              status: 404,
+              message: 'Meal does not exist',
+            })
+          } else {
+            connection.query(
+              'SELECT * FROM meal_participants_user WHERE mealId=?',
+              [req.params.id],
+              function (error, results, fields) {
+                if (error) throw error
+                let numberOfParticipants = results.length
+                participating = false
+                results.forEach((i) => {
+                  if (i.userId == req.userId) participating = true
+                })
+                if (results && participating) {
+                  connection.query(
+                    'DELETE FROM meal_participants_user WHERE mealId=? AND userId=?',
+                    [req.params.id, req.userId],
+                    function (error, results, fields) {
+                      if (error) throw error
+                      if (results.affectedRows > 0) {
+                        res.status(200).json({
+                          status: 200,
+                          result: {
+                            currentlyParticipating: false,
+                            currentAmountOfParticipants:
+                              numberOfParticipants - 1,
+                          },
+                        })
+                      }
+                    }
+                  )
+                } else if (results && !participating) {
+                  connection.query(
+                    'INSERT INTO meal_participants_user VALUES (?,?)',
+                    [req.params.id, req.userId],
+                    function (error, results, fields) {
+                      if (error) throw error
+                      if (results.affectedRows > 0) {
+                        let participate = {}
+                        res.status(200).json({
+                          status: 200,
+                          result: {
+                            currentlyParticipating: true,
+                            currentAmountOfParticipants:
+                              numberOfParticipants + 1,
+                          },
+                        })
+                      }
+                    }
+                  )
+                }
+              }
+            )
+          }
+        }
+      )
+    })
+  },
 }

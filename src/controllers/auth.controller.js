@@ -39,7 +39,7 @@ module.exports = {
       })
     } else {
       const queryString =
-        'SELECT `id`, `firstName`, `lastName`, `password`, IF(`isActive`, true, false) `isActive` FROM `user` WHERE `emailAdress`=?'
+        'SELECT `id`, `firstName`, `lastName`, `password`, `isActive` FROM `user` WHERE `emailAdress`=?'
 
       dbconnection.getConnection(function (err, connection) {
         if (err) {
@@ -95,6 +95,7 @@ module.exports = {
                   function (err, token) {
                     if (err) logger.error(err)
                     if (token) {
+                      userinfo.isActive = userinfo.isActive ? true : false
                       logger.info('User logged in, sending ', userinfo)
                       return res.status(200).json({
                         status: 200,

@@ -60,7 +60,7 @@ describe('Login', () => {
     })
   })
   describe('UC-101 Login /api/auth/login', () => {
-    it.only('TC-101-1 When a required input is missing, a validation error should be returned', (done) => {
+    it('TC-101-1 When a required input is missing, a validation error should be returned', (done) => {
       chai
         .request(server)
         .post('/api/auth/login')
@@ -90,7 +90,7 @@ describe('Login', () => {
         })
     })
 
-    it.only('TC-101-2 When an invalid email address is submitted, a validation error should be returned', (done) => {
+    it('TC-101-2 When an invalid email address is submitted, a validation error should be returned', (done) => {
       chai
         .request(server)
         .post('/api/auth/login')
@@ -124,7 +124,7 @@ describe('Login', () => {
         })
     })
 
-    it.only('TC-101-3 When an invalid password is submitted, a validation error should be returned', (done) => {
+    it('TC-101-3 When an invalid password is submitted, a validation error should be returned', (done) => {
       chai
         .request(server)
         .post('/api/auth/login')
@@ -258,7 +258,7 @@ describe('Login', () => {
       done()
     })
 
-    it.only('TC-101-4 User does not exist', (done) => {
+    it('TC-101-4 User does not exist', (done) => {
       chai
         .request(server)
         .post('/api/auth/login')
@@ -278,7 +278,7 @@ describe('Login', () => {
         })
     })
 
-    it.only('TC-101-5 User succesfully logged in', (done) => {
+    it('TC-101-5 User succesfully logged in', (done) => {
       chai
         .request(server)
         .post('/api/auth/login')

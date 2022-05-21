@@ -20,8 +20,8 @@ const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;'
 
 const INSERT_USERS =
   'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `isActive` , `street`, `city` ) VALUES' +
-  '(1, "first", "last", "email@adress.com", "Secret11", "1", "street", "city"),' +
-  '(2, "Davide", "Ambesi", "d.ambesi@avans.nl", "Secret11", "0", "street", "city");'
+  '(1, "first", "last", "email@adress.com", "Secret11", 1, "street", "city"),' +
+  '(2, "Davide", "Ambesi", "d.ambesi@avans.nl", "Secret11", 0, "street", "city");'
 
 const INSERT_MEALS =
   'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`, `allergenes` ) VALUES' +
@@ -444,7 +444,7 @@ describe('Manage users', () => {
           let { status, result } = res.body
           status.should.equal(200)
           result.should.be.an('array')
-          result.every((i) => i.should.include({ isActive: 'false' }))
+          result.every((i) => i.should.include({ isActive: false }))
           done()
         })
     })
@@ -458,7 +458,7 @@ describe('Manage users', () => {
           let { status, result } = res.body
           status.should.equal(200)
           result.should.be.an('array')
-          result.every((i) => i.should.include({ isActive: 'true' }))
+          result.every((i) => i.should.include({ isActive: true }))
           done()
         })
     })
