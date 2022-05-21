@@ -20,28 +20,6 @@ git branch -M main
 git push -uf origin main
 ```
 
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.com/2182556/prog4-share-a-meal-2182556/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
 ***
 
 # Editing this README
@@ -51,11 +29,50 @@ When you're ready to make this README your own, just edit this file and use the 
 ## Suggestions for a good README
 Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
-
 ## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+'Share a meal' API based on documentation from [Share-a-Meal Backend API (SWAGGER)](https://shareameal-api.herokuapp.com/docs/). It can be used to create an application where users can create an account, login, create meals, find meals and participate. It is made with the purpose of encouraging people to connect with others near them by either sharing or participating in a meal. 
+It is currently deployed at Heroku, [https://share-a-meal-2182556.herokuapp.com/].
+
+## Database 
+The database has 3 tables, 'user', 'meal' and 'meal_participants_user' with two entities, user and meal;
+User has the following columns, with the expected type when making a request: 
+- <i>id | int</i>
+- firstName | string
+- lastName | string
+- emailAdress | string 
+- password (encrypted) | string
+- street | string
+- city | string
+- phoneNumber | string 
+- isActive | boolean
+- roles | array with possible values ('admin', 'editor', 'guest', '')
+
+Meal has the following columns: 
+- <i>id | int</i>
+- name | string
+- description | string
+- isActive | boolean
+- isToTakeHome | boolean
+- isVegan | boolean
+- isVega | boolean
+- dateTime | datetime
+- maxAmountOfParticipants | int
+- price | decimal
+- imageUrl | string
+- allegenes | array with possible values ('gluten', 'lactose', 'noten', '')
+- <i>cookId | int</i>
+- <i>createDate | datetime</i>
+- <i>updateDate | datetime</i>
+
+The columns in italics cannot be given in a request body. id can however be given in a route. 
+
+
+## Routes
+| REQUEST        | Route           | Required header  | Required keys in body |
+| ------------- |:-------------:| -----:|
+| POST     | /api/auth/login |  | emailAdress; password |
+| POST    | /api/user      |    | firstName; lastName; emailAdress; password; street; city; phoneNumber |
+| zebra stripes | are neat      |    $1 |
 
 ## Badges
 On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
