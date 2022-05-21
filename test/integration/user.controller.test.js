@@ -34,29 +34,26 @@ describe('Manage users', () => {
     done()
   })
   beforeEach((done) => {
-    dbconnection.getConnection(function (err, connection) {
+    dbconnection.getConnection((err, connection) => {
       if (err) throw err
 
-      connection.query(CLEAR_MEALS_TABLE, function (error, results, fields) {
+      connection.query(CLEAR_MEALS_TABLE, (error, results, fields) => {
         connection.release()
         if (error) throw error
       })
-      connection.query(
-        CLEAR_PARTICIPANTS_TABLE,
-        function (error, results, fields) {
-          connection.release()
-          if (error) throw error
-        }
-      )
-      connection.query(CLEAR_USERS_TABLE, function (error, results, fields) {
+      connection.query(CLEAR_PARTICIPANTS_TABLE, (error, results, fields) => {
         connection.release()
         if (error) throw error
       })
-      connection.query(INSERT_USERS, function (error, results, fields) {
+      connection.query(CLEAR_USERS_TABLE, (error, results, fields) => {
         connection.release()
         if (error) throw error
       })
-      connection.query(INSERT_MEALS, function (error, results, fields) {
+      connection.query(INSERT_USERS, (error, results, fields) => {
+        connection.release()
+        if (error) throw error
+      })
+      connection.query(INSERT_MEALS, (error, results, fields) => {
         connection.release()
         if (error) throw error
         done()
@@ -78,7 +75,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -98,7 +94,6 @@ describe('Manage users', () => {
           password: 'Secret11',
           emailAdress: '2182556@avans.nl',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -118,7 +113,6 @@ describe('Manage users', () => {
           password: 'Secret11',
           emailAdress: '2182556@avans.nl',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -138,7 +132,6 @@ describe('Manage users', () => {
           isActive: true,
           emailAdress: '2182556@avans.nl',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -162,7 +155,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -184,7 +176,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -211,7 +202,6 @@ describe('Manage users', () => {
           city: 'Breda',
           isActive: true,
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -236,7 +226,6 @@ describe('Manage users', () => {
           city: 'Breda',
           isActive: true,
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -261,7 +250,6 @@ describe('Manage users', () => {
           city: 'Breda',
           isActive: true,
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -286,7 +274,6 @@ describe('Manage users', () => {
           city: 'Breda',
           isActive: true,
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -311,7 +298,6 @@ describe('Manage users', () => {
           city: 'Breda',
           isActive: true,
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -339,7 +325,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -367,7 +352,7 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
+          roles: ['editor', 'admin'],
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -377,6 +362,7 @@ describe('Manage users', () => {
           result.should.be
             .an('object')
             .that.includes.keys('id', 'firstName', 'lastName', 'emailAdress')
+          result.should.include({ emailAdress: 'anewemail@adress.com' })
           done()
         })
     })
@@ -384,19 +370,16 @@ describe('Manage users', () => {
   //Use case 202
   describe('UC-202 Overview of all users /api/user', () => {
     it('TC-202-1 When all users are requested an empty database should return 0 users', (done) => {
-      dbconnection.getConnection(function (err, connection) {
+      dbconnection.getConnection((err, connection) => {
         if (err) throw err
 
-        connection.query(CLEAR_MEALS_TABLE, function (error, results, fields) {
+        connection.query(CLEAR_MEALS_TABLE, (error, results, fields) => {
           if (error) throw error
         })
-        connection.query(
-          CLEAR_PARTICIPANTS_TABLE,
-          function (error, results, fields) {
-            if (error) throw error
-          }
-        )
-        connection.query(CLEAR_USERS_TABLE, function (error, results, fields) {
+        connection.query(CLEAR_PARTICIPANTS_TABLE, (error, results, fields) => {
+          if (error) throw error
+        })
+        connection.query(CLEAR_USERS_TABLE, (error, results, fields) => {
           if (error) throw error
           connection.release()
         })
@@ -577,7 +560,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -605,7 +587,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '0612345678b',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -631,7 +612,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '-0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -657,7 +637,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '06+12345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -683,7 +662,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '+31- 612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -709,7 +687,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '12345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -781,7 +758,6 @@ describe('Manage users', () => {
           isActive: true,
           password: 'Secret11',
           phoneNumber: '0612345678',
-          roles: 'editor,guest',
         })
         .end((err, res) => {
           res.should.be.an('object')
@@ -799,21 +775,18 @@ describe('Manage users', () => {
 
   describe('UC-206 Delete user /api/user/:id', () => {
     beforeEach((done) => {
-      dbconnection.getConnection(function (err, connection) {
+      dbconnection.getConnection((err, connection) => {
         if (err) throw err
 
-        connection.query(CLEAR_MEALS_TABLE, function (error, results, fields) {
+        connection.query(CLEAR_MEALS_TABLE, (error, results, fields) => {
           connection.release()
           if (error) throw error
         })
-        connection.query(
-          CLEAR_PARTICIPANTS_TABLE,
-          function (error, results, fields) {
-            connection.release()
-            if (error) throw error
-            done()
-          }
-        )
+        connection.query(CLEAR_PARTICIPANTS_TABLE, (error, results, fields) => {
+          connection.release()
+          if (error) throw error
+          done()
+        })
       })
     })
     it('TC-206-1 When a user does not exist an error should be returned', (done) => {

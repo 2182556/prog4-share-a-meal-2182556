@@ -1,6 +1,6 @@
 {
   "name": "prog4-share-a-meal-2182556",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Programmeren 4 SAM server",
   "main": "index.js",
   "scripts": {

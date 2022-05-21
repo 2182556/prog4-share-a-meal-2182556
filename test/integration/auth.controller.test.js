@@ -34,29 +34,26 @@ describe('Login', () => {
     done()
   })
   beforeEach((done) => {
-    dbconnection.getConnection(function (err, connection) {
+    dbconnection.getConnection((err, connection) => {
       if (err) throw err
 
-      connection.query(CLEAR_MEALS_TABLE, function (error, results, fields) {
+      connection.query(CLEAR_MEALS_TABLE, (error, results, fields) => {
         connection.release()
         if (error) throw error
       })
-      connection.query(
-        CLEAR_PARTICIPANTS_TABLE,
-        function (error, results, fields) {
-          connection.release()
-          if (error) throw error
-        }
-      )
-      connection.query(CLEAR_USERS_TABLE, function (error, results, fields) {
+      connection.query(CLEAR_PARTICIPANTS_TABLE, (error, results, fields) => {
         connection.release()
         if (error) throw error
       })
-      connection.query(INSERT_USERS, function (error, results, fields) {
+      connection.query(CLEAR_USERS_TABLE, (error, results, fields) => {
         connection.release()
         if (error) throw error
       })
-      connection.query(INSERT_MEALS, function (error, results, fields) {
+      connection.query(INSERT_USERS, (error, results, fields) => {
+        connection.release()
+        if (error) throw error
+      })
+      connection.query(INSERT_MEALS, (error, results, fields) => {
         connection.release()
         if (error) throw error
         done()

@@ -1,16 +1,18 @@
 const dbconnection = require('../../database/dbconnection')
-const Joi = require('joi')
+const joi = require('joi')
 const jwt = require('jsonwebtoken')
 const jwtPrivateKey = require('../config/config').jwtPrivateKey
 const { logger } = require('../config/config')
 const bcrypt = require('bcrypt')
 
-const loginSchema = Joi.object({
-  emailAdress: Joi.string()
+const loginSchema = joi.object({
+  emailAdress: joi
+    .string()
     .required()
     .email()
     .pattern(new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')),
-  password: Joi.string()
+  password: joi
+    .string()
     .required()
     .pattern(
       new RegExp('(?=^.{8,}$)(?=.*[0-9])(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$')
@@ -33,10 +35,10 @@ module.exports = {
       })
     }
     const queryString = 'SELECT * FROM `user` WHERE `emailAdress`=?'
-    dbconnection.getConnection(function (err, connection) {
+    dbconnection.getConnection((err, connection) => {
       if (err) {
         return next({
-          err,
+          status: 500,
           message: err.sqlMessage,
         })
       }
@@ -44,7 +46,7 @@ module.exports = {
       connection.query(
         queryString,
         [value.emailAdress],
-        function (error, results, fields) {
+        (error, results, fields) => {
           logger.debug('query made')
           connection.release()
 
@@ -56,11 +58,10 @@ module.exports = {
           }
 
           if (results && results.length == 1) {
-            bcrypt.compare(
-              value.password,
-              results[0].password,
-              function (err, result) {
-                if (result) {
+            bcrypt
+              .compare(value.password, results[0].password)
+              .then((match) => {
+                if (match) {
                   logger.info('Password matches encrypted password in database')
                   const { password, ...userinfo } = results[0]
                   const payload = { id: userinfo.id }
@@ -68,7 +69,7 @@ module.exports = {
                     payload,
                     jwtPrivateKey,
                     { expiresIn: '25d' },
-                    function (err, token) {
+                    (err, token) => {
                       if (err) return next(err)
                       if (token) {
                         userinfo.isActive = userinfo.isActive ? true : false
@@ -87,8 +88,7 @@ module.exports = {
                     message: 'The password does not match the emailAdress',
                   })
                 }
-              }
-            )
+              })
           } else {
             logger.debug('User does not exist')
             return next({
@@ -115,13 +115,13 @@ module.exports = {
 
       jwt.verify(token, jwtPrivateKey, (err, payload) => {
         if (err) {
-          logger.warn('Not authorized')
+          logger.warn('not authorized')
           return next({ status: 401, message: 'Not authorized' })
         }
         if (payload) {
           logger.debug('token is valid', payload)
           req.userId = payload.id
-          next()
+          return next()
         }
       })
     }
