@@ -391,6 +391,7 @@ module.exports = {
   },
   updateUser: (req, res, next) => {
     logger.info('updateUser called')
+    logger.debug(req.body)
     const id = req.params.id
 
     dbconnection.getConnection(function (err, connection) {
