@@ -1,6 +1,8 @@
 const dbconnection = require('../../database/dbconnection')
-const Joi = require('joi')
 const { logger } = require('../config/config')
+const Joi = require('joi')
+const bcrypt = require('bcrypt')
+const saltRounds = 10
 
 const emailRegExp = new RegExp('[^@ \t\r\n]+@[^@ \t\r\n]+.[^@ \t\r\n]+')
 const passwordRegExp = new RegExp(
@@ -136,79 +138,82 @@ module.exports = {
     let user = req.validatedUser
     console.log('addUser called')
     console.log(user)
+    bcrypt.hash(user.password, saltRounds, function (err, hash) {
+      user.password = hash
 
-    dbconnection.getConnection(function (err, connection) {
-      if (err) {
-        logger.error('connection error')
-        const conError = {
-          status: 500,
-          message: err.sqlMessage,
-        }
-        next(conError)
-      }
-
-      connection.query(
-        'INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) VALUES(?,?,?,?,?,?,?,?,?);',
-        [
-          user.firstName,
-          user.lastName,
-          user.isActive,
-          user.emailAdress,
-          user.password,
-          user.phoneNumber,
-          user.roles,
-          user.street,
-          user.city,
-        ],
-        function (error, results, fields) {
-          connection.release()
-
-          logger.info('queried')
-
-          if (error) {
-            logger.error('error after query', error.sqlMessage)
-            const conError = {
-              status: 500,
-              message: error.sqlMessage,
-            }
-            next(conError)
-          } else {
-            console.log('email ', user.emailAdress)
-            connection.query(
-              `SELECT * FROM user WHERE emailAdress=?`,
-              [user.emailAdress],
-              function (error, results, fields) {
-                connection.release()
-                if (error) {
-                  console.log(err.sqlMessage)
-                  const conError = {
-                    status: 500,
-                    message: error.sqlMessage,
-                  }
-                  next(conError)
-                } else {
-                  console.log(results)
-                  let id = 0
-                  if (results.length > 0) id = results[0].id
-                  user = {
-                    id: id,
-                    isActive: user.isActive ? true : false,
-                    ...user,
-                  }
-                  res.status(201).json({
-                    status: 201,
-                    result: user,
-                  })
-                }
-              }
-            )
+      dbconnection.getConnection(function (err, connection) {
+        if (err) {
+          logger.error('connection error')
+          const conError = {
+            status: 500,
+            message: err.sqlMessage,
           }
+          next(conError)
         }
-      )
 
-      // dbconnection.end((err) => {
-      //   console.log("Pool was closed.");
-      // });
+        connection.query(
+          'INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) VALUES(?,?,?,?,?,?,?,?,?);',
+          [
+            user.firstName,
+            user.lastName,
+            user.isActive,
+            user.emailAdress,
+            user.password,
+            user.phoneNumber,
+            user.roles,
+            user.street,
+            user.city,
+          ],
+          function (error, results, fields) {
+            connection.release()
+
+            logger.info('queried')
+
+            if (error) {
+              logger.error('error after query', error.sqlMessage)
+              const conError = {
+                status: 500,
+                message: error.sqlMessage,
+              }
+              next(conError)
+            } else {
+              console.log('email ', user.emailAdress)
+              connection.query(
+                `SELECT * FROM user WHERE emailAdress=?`,
+                [user.emailAdress],
+                function (error, results, fields) {
+                  connection.release()
+                  if (error) {
+                    console.log(err.sqlMessage)
+                    const conError = {
+                      status: 500,
+                      message: error.sqlMessage,
+                    }
+                    next(conError)
+                  } else {
+                    logger.info(results)
+                    let id = 0
+                    if (results.length > 0) id = results[0].id
+                    user = {
+                      id: id,
+                      isActive: user.isActive ? true : false,
+                      ...user,
+                    }
+                    res.status(201).json({
+                      status: 201,
+                      result: user,
+                    })
+                  }
+                }
+              )
+            }
+          }
+        )
+
+        // dbconnection.end((err) => {
+        //   console.log("Pool was closed.");
+        // });
+      })
     })
   },
   getAllUsers: (req, res, next) => {
@@ -234,18 +239,9 @@ module.exports = {
       for (p in req.query) {
         if (allowedParams.includes(p)) {
           if (i > 0) queryString += ' AND '
-          // if (p == 'isActive') {
-          //   if (req.query[p]) {
-          //     queryString += 'isActive=1'
-          //   } else {
-          //     queryString += 'isActive=0'
-          //   }
-          // } else {
           queryString += `${p}=?`
           if (p == 'isActive') queryParams.push(req.query[p] === 'true')
           else queryParams.push(req.query[p])
-          // }
-
           i++
         }
       }
@@ -360,10 +356,11 @@ module.exports = {
             console.log('results = ', results.length)
             if (results.length > 0) {
               console.log(results)
-              results[0].isActive = results[0].isActive ? true : false
+              const { password, ...userinfo } = results[0]
+              userinfo.isActive = userinfo.isActive ? true : false
               res.status(200).json({
                 status: 200,
-                result: results[0],
+                result: userinfo,
               })
             } else {
               const err = {
@@ -399,34 +396,36 @@ module.exports = {
         console.log(req.existingUser)
         var user = req.existingUser
         console.log(user)
-        const updateUserSchema = Joi.object({
-          id: Joi.number().integer().default(`${user.id}`),
-          firstName: Joi.string().default(`${user.firstName}`),
-          lastName: Joi.string().default(`${user.lastName}`),
-          emailAdress: Joi.string()
-            .email()
-            .default(`${user.emailAdress}`)
-            .pattern(emailRegExp),
-          street: Joi.string().default(`${user.street}`),
-          city: Joi.string().default(`${user.city}`),
-          isActive: Joi.boolean().default(`${user.isActive}`),
-          password: Joi.string()
-            .default(`${user.password}`)
-            .pattern(passwordRegExp)
-            .messages({
-              'string.pattern.base':
-                'Password should be at least 8 characters, contain one capital letter and one number',
-            }),
-          phoneNumber: Joi.string()
-            .default(`${user.phoneNumber}`)
-            .pattern(phoneNumberRegExp)
-            .messages({
-              'string.pattern.base':
-                "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",
-            }),
-          roles: Joi.string().default(`${user.phoneNumber}`),
-        })
+        //updateUserSchema only used if some values are no longer required
+        // const updateUserSchema = Joi.object({
+        //   id: Joi.number().integer().default(`${user.id}`),
+        //   firstName: Joi.string().default(`${user.firstName}`),
+        //   lastName: Joi.string().default(`${user.lastName}`),
+        //   emailAdress: Joi.string()
+        //     .email()
+        //     .default(`${user.emailAdress}`)
+        //     .pattern(emailRegExp),
+        //   street: Joi.string().default(`${user.street}`),
+        //   city: Joi.string().default(`${user.city}`),
+        //   isActive: Joi.boolean().default(`${user.isActive}`),
+        //   password: Joi.string()
+        //     .default(`${user.password}`)
+        //     .pattern(passwordRegExp)
+        //     .messages({
+        //       'string.pattern.base':
+        //         'Password should be at least 8 characters, contain one capital letter and one number',
+        //     }),
+        //   phoneNumber: Joi.string()
+        //     .default(`${user.phoneNumber}`)
+        //     .pattern(phoneNumberRegExp)
+        //     .messages({
+        //       'string.pattern.base':
+        //         "phoneNumber should have at least 9 digits and can start with '+', and contain one '-' or ' '",
+        //     }),
+        //   roles: Joi.string().default(`${user.roles}`),
+        // })
         const { error, value } = userSchema.validate(req.body)
+
         if (error) {
           const err = {
             status: 400,
@@ -434,45 +433,49 @@ module.exports = {
           }
           next(err)
         } else {
-          console.log(value)
-          connection.query(
-            `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
-            [
-              value.firstName,
-              value.lastName,
-              value.isActive,
-              value.emailAdress,
-              value.password,
-              value.phoneNumber,
-              value.roles,
-              value.street,
-              value.city,
-              id,
-            ],
-            function (error, results, fields) {
-              connection.release()
+          bcrypt.hash(value.password, saltRounds, function (err, hash) {
+            value.password = hash
+            console.log(value)
+            connection.query(
+              `UPDATE user SET firstName=?,lastName=?,isActive=?,emailAdress=?,password=?,phoneNumber=?,roles=?,street=?,city=? WHERE id=?`,
+              [
+                value.firstName,
+                value.lastName,
+                value.isActive,
+                value.emailAdress,
+                value.password,
+                value.phoneNumber,
+                value.roles,
+                value.street,
+                value.city,
+                id,
+              ],
+              function (error, results, fields) {
+                connection.release()
 
-              if (error) {
-                const err = {
-                  status: 500,
-                  message: error.sqlMessage,
+                if (error) {
+                  const err = {
+                    status: 500,
+                    message: error.sqlMessage,
+                  }
+                  next(err)
+                } else {
+                  logger.info(user.id)
+                  const { password, ...userinfo } = value
+                  let updatedUser = {
+                    id: user.id,
+                    isActive: userinfo.isActive ? true : false,
+                    ...userinfo,
+                  }
+                  console.log(updatedUser)
+                  res.status(200).json({
+                    status: 200,
+                    result: updatedUser,
+                  })
                 }
-                next(err)
-              } else {
-                logger.info(user.id)
-                let updatedUser = {
-                  id: user.id,
-                  isActive: value.isActive ? true : false,
-                  ...value,
-                }
-                console.log(updatedUser)
-                res.status(200).json({
-                  status: 200,
-                  result: updatedUser,
-                })
               }
-            }
-          )
+            )
+          })
         }
       } else {
         logger.info('id does not match')
@@ -505,8 +508,6 @@ module.exports = {
           `DELETE FROM user WHERE id=${id};`,
           function (error, results, fields) {
             connection.release()
-            // console.log(error);
-            // console.log(error.sqlMessage);
             if (error) {
               console.log(error.sqlMessage)
               const err = {

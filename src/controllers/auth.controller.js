@@ -1,8 +1,9 @@
 const dbconnection = require('../../database/dbconnection')
 const Joi = require('joi')
 const jwt = require('jsonwebtoken')
-const logger = require('../config/config').logger
 const jwtPrivateKey = require('../config/config').jwtPrivateKey
+const { logger } = require('../config/config')
+const bcrypt = require('bcrypt')
 
 const loginSchema = Joi.object({
   emailAdress: Joi.string()
@@ -23,132 +24,102 @@ const loginSchema = Joi.object({
 module.exports = {
   login: (req, res, next) => {
     logger.info('login called')
-    logger.debug(req.body)
-
     const { error, value } = loginSchema.validate(req.body)
-    logger.debug(value.emailAdress)
 
     if (error) {
-      // if (res.headersSent) {
-      //   return next(error)
-      // }
-      logger.error(error.message)
-      return res.status(400).json({
+      return next({
         status: 400,
         message: error.message,
       })
-    } else {
-      const queryString = 'SELECT * FROM `user` WHERE `emailAdress`=?'
-
-      dbconnection.getConnection(function (err, connection) {
-        if (err) {
-          // if (res.headersSent) {
-          //   return next(err)
-          // }
-          // res.status(500).json({
-          //   status: 500,
-          //   message: err.sqlMessage,
-          // })
-          logger.error(err.sqlMessage)
-          const error = {
-            status: 500,
-            message: err.sqlMessage,
-          }
-          next(error)
-        }
-
-        connection.query(
-          queryString,
-          [value.emailAdress],
-          function (error, results, fields) {
-            logger.debug('query made')
-            connection.release()
-
-            if (error) {
-              // if (res.headersSent) {
-              //   return next(error)
-              // }
-              // res.status(500).json({
-              //   status: 500,
-              //   message: error.sqlMessage,
-              // })
-              logger.error('Error from query ', error.sqlMessage)
-              const qError = {
-                status: 500,
-                message: error.sqlMessage,
-              }
-              next(qError)
-            }
-
-            logger.debug(results)
-
-            if (results && results.length == 1) {
-              logger.debug('one result')
-              if (value.password == results[0].password) {
-                const { password, ...userinfo } = results[0]
-                const payload = { id: userinfo.id }
-                jwt.sign(
-                  payload,
-                  jwtPrivateKey,
-                  { expiresIn: '25d' },
-                  function (err, token) {
-                    if (err) logger.error(err)
-                    if (token) {
-                      userinfo.isActive = userinfo.isActive ? true : false
-                      logger.info('User logged in, sending ', userinfo)
-                      return res.status(200).json({
-                        status: 200,
-                        result: { ...userinfo, token },
-                      })
-                    }
-                  }
-                )
-              } else {
-                logger.debug('Password does not match')
-                return res.status(400).json({
-                  status: 400,
-                  message: 'The password does not match the emailAdress',
-                })
-              }
-            } else {
-              logger.debug('User does not exist')
-              return res.status(404).json({
-                status: 404,
-                message: 'There was no user found with this emailAdress',
-              })
-            }
-          }
-        )
-      })
     }
+    const queryString = 'SELECT * FROM `user` WHERE `emailAdress`=?'
+    dbconnection.getConnection(function (err, connection) {
+      if (err) {
+        return next({
+          err,
+          message: err.sqlMessage,
+        })
+      }
+
+      connection.query(
+        queryString,
+        [value.emailAdress],
+        function (error, results, fields) {
+          logger.debug('query made')
+          connection.release()
+
+          if (error) {
+            return next({
+              status: 500,
+              message: error.sqlMessage,
+            })
+          }
+
+          if (results && results.length == 1) {
+            bcrypt.compare(
+              value.password,
+              results[0].password,
+              function (err, result) {
+                if (result) {
+                  logger.info('Password matches encrypted password in database')
+                  const { password, ...userinfo } = results[0]
+                  const payload = { id: userinfo.id }
+                  jwt.sign(
+                    payload,
+                    jwtPrivateKey,
+                    { expiresIn: '25d' },
+                    function (err, token) {
+                      if (err) return next(err)
+                      if (token) {
+                        userinfo.isActive = userinfo.isActive ? true : false
+                        logger.info('User logged in, sending ', userinfo)
+                        return res.status(200).json({
+                          status: 200,
+                          result: { ...userinfo, token },
+                        })
+                      }
+                    }
+                  )
+                } else {
+                  logger.debug('Password does not match')
+                  return next({
+                    status: 400,
+                    message: 'The password does not match the emailAdress',
+                  })
+                }
+              }
+            )
+          } else {
+            logger.debug('User does not exist')
+            return next({
+              status: 404,
+              message: 'There was no user found with this emailAdress',
+            })
+          }
+        }
+      )
+    })
   },
   validateToken: (req, res, next) => {
     logger.info('validateToken called')
     // logger.trace(req.headers)
-    // The headers should contain the authorization-field with value 'Bearer [token]'
     const authHeader = req.headers.authorization
     if (!authHeader) {
       logger.warn('Authorization header missing')
-      res.status(401).json({
+      return next({
         status: 401,
         message: 'Authorization header missing',
       })
     } else {
-      // Strip the word 'Bearer ' from the headervalue
-      const token = authHeader.substring(7, authHeader.length)
+      const token = authHeader.substring(7, authHeader.length) //stripping 'Bearer' from token
 
       jwt.verify(token, jwtPrivateKey, (err, payload) => {
         if (err) {
           logger.warn('Not authorized')
-          res.status(401).json({
-            status: 401,
-            message: 'Not authorized',
-          })
+          return next({ status: 401, message: 'Not authorized' })
         }
         if (payload) {
           logger.debug('token is valid', payload)
-          // User heeft toegang. Voeg UserId uit payload toe aan
-          // request, voor ieder volgend endpoint.
           req.userId = payload.id
           next()
         }

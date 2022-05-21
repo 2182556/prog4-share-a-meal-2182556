@@ -20,8 +20,8 @@ const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;'
 
 const INSERT_USERS =
   'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `isActive` , `street`, `city` ) VALUES' +
-  '(1, "first", "last", "email@adress.com", "Secret11", "1", "street", "city"),' +
-  '(2, "Davide", "Ambesi", "d.ambesi@avans.nl", "Secret11", "0", "street", "city");'
+  '(1, "first", "last", "email@adress.com", "$2b$10$9HWpL3XxxAlu/JZ3.AsO7.kuJvVvoLQg84GIpYQ8kM03G6h6WLXfS", "1", "street", "city"),' +
+  '(2, "Davide", "Ambesi", "d.ambesi@avans.nl", "$2b$10$9HWpL3XxxAlu/JZ3.AsO7.kuJvVvoLQg84GIpYQ8kM03G6h6WLXfS", "0", "street", "city");'
 
 const INSERT_MEALS =
   'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`, `allergenes` ) VALUES' +

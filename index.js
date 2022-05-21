@@ -35,9 +35,8 @@ app.all('*', (req, res) => {
 })
 
 app.use((err, req, res, next) => {
-  logger.error('Express error handler called ', err)
-  return res.status(err.status).json(err)
-  //change to 500?
+  logger.error('Error handler called:', err)
+  res.status(err.status).json(err)
 })
 
 app.listen(port, () => {
