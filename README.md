@@ -1,6 +1,6 @@
 # prog4-share-a-meal-2182556
 
-
+[![Deploy to Heroku](https://github.com/2182556/prog4-share-a-meal-2182556/actions/workflows/main.yml/badge.svg)](https://github.com/2182556/prog4-share-a-meal-2182556/actions/workflows/main.yml)
 
 ## Getting started
 
