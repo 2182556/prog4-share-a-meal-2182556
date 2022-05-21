@@ -327,7 +327,7 @@ module.exports = {
                       value.isToTakeHome,
                       newDateTime,
                       value.imageUrl,
-                      value.allergenes,
+                      value.allergenes.toString(),
                       value.maxAmountOfParticipants,
                       value.price,
                       id,
