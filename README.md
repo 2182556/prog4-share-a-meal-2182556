@@ -18,6 +18,7 @@ It is currently deployed at Heroku, https://share-a-meal-2182556.herokuapp.com/.
   - [Database](#Database)
   - [Routes](#Routes)
 - [Author](#Author)
+- [Try it out](#Try-it-out)
 
 
 ***
@@ -86,7 +87,7 @@ The database has 3 tables, 'user', 'meal' and 'meal_participants_user' with two 
 User has the following columns, with the expected type when making a request: 
 Column                  | Request type |
 |:----------------------| :------------|
-<i>id                   | int</i>
+*id*                    | int
 firstName               | string
 lastName                | string
 emailAdress             | string 
@@ -100,7 +101,7 @@ roles                   | array (allows 'admin', 'editor', 'guest' and '')
 Meal has the following columns: 
 Column                  | Request type |
 |:----------------------|:-------------|
-<i>id                   | int</i>
+*id*                    | int
 name                    | string
 description             | string
 isActive                | boolean
@@ -112,9 +113,9 @@ maxAmountOfParticipants | int
 price                   | decimal
 imageUrl                | string
 allegenes               | array (allows 'gluten', 'lactose', 'noten' and '')
-<i>cookId               | int</i>
-<i>createDate           | datetime</i>
-<i>updateDate           | datetime</i>
+*cookId*                | int
+*createDate*            | datetime
+*updateDate*            | datetime
 
 meal_participants_user has the columns mealId and cookId, to keep track of participation.
 The columns in italics cannot be given in a request body, id can however be given in a route as you can see in the next section. 
@@ -143,5 +144,12 @@ For more in-depth information about the request body and responses of each route
 
 # Author
 If you need me for anything, you can send an email to je.boellaard@student.avans.nl. I am the author of this project, however a lot of the code is based on code from the course Programming 4 from the bachelor Computer Science at Avans Breda. The example code for this project can be found [here](https://github.com/avansinformatica/programmeren-4-shareameal).
+
+***
+
+# Try it out
+As mentioned before, the server is deployed at https://share-a-meal-2182556.herokuapp.com/, feel free to try it out!
+
+***
 
 [To top ^](#prog4-share-a-meal-2182556)
