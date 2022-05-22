@@ -20,7 +20,7 @@ const userSchema = joi.object({
   emailAdress: joi.string().required().email().pattern(emailRegExp),
   street: joi.string().required(),
   city: joi.string().required(),
-  isActive: joi.boolean().default(true),
+  isActive: joi.boolean().required(),
   password: joi.string().required().pattern(passwordRegExp).messages({
     'string.pattern.base': passwordInvalidMessage,
   }),

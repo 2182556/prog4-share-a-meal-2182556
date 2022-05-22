@@ -35,7 +35,7 @@ app.all('*', (req, res) => {
 })
 
 app.use((err, req, res, next) => {
-  logger.error('Error handler called:', err)
+  logger.error('Error handler called:', err.message)
   res.status(err.status).json(err)
 })
 

@@ -396,8 +396,7 @@ describe('Manage meals', () => {
           result.should.be
             .an('object')
             .that.includes.keys('id', 'cookId', 'name', 'dateTime')
-          result.should.include({ cookId: 1 })
-          result.should.include({ name: 'A new meal name' })
+          result.should.include({ cookId: 1, name: 'A new meal name' })
           done()
         })
     })
