@@ -34,32 +34,32 @@ const userSchema = joi.object({
 })
 
 module.exports = {
-  setMaxConnections: (req, res, next) => {
-    dbconnection.getConnection((error, connection) => {
-      if (error) {
-        logger.error(error.message)
-        return next({
-          status: 500,
-          message: error.message,
-        })
-      } else {
-        connection.query(
-          `SET GLOBAL max_connections = 1024;`,
-          [req.params.id],
-          (error, results, fields) => {
-            connection.release()
-            if (error) {
-              logger.error(error.sqlMessage)
-              return next({
-                status: 500,
-                message: error.sqlMessage,
-              })
-            }
-          }
-        )
-      }
-    })
-  },
+  // setMaxConnections: (req, res, next) => {
+  //   dbconnection.getConnection((error, connection) => {
+  //     if (error) {
+  //       logger.error(error.message)
+  //       return next({
+  //         status: 500,
+  //         message: error.message,
+  //       })
+  //     } else {
+  //       connection.query(
+  //         `SET GLOBAL max_connections = 1024;`,
+  //         [req.params.id],
+  //         (error, results, fields) => {
+  //           connection.release()
+  //           if (error) {
+  //             logger.error(error.sqlMessage)
+  //             return next({
+  //               status: 500,
+  //               message: error.sqlMessage,
+  //             })
+  //           }
+  //         }
+  //       )
+  //     }
+  //   })
+  // },
   validateUser: (req, res, next) => {
     logger.info('validateUser called')
 
