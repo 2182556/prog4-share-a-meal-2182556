@@ -35,7 +35,7 @@ module.exports = {
 
     dbconnection.getConnection((err, connection) => {
       if (err) {
-        return next({ status: 500, message: err.sqlMessage })
+        return next({ status: 500, message: err.message })
       }
       let formattedDateTime = new Date(meal.dateTime)
         .toISOString()
@@ -102,7 +102,7 @@ module.exports = {
     console.log('getAllMeals called')
 
     dbconnection.getConnection((err, connection) => {
-      if (err) return next({ status: 500, message: err.sqlMessage })
+      if (err) return next({ status: 500, message: err.message })
 
       connection.query('SELECT * FROM meal', (error, results, fields) => {
         connection.release()
@@ -129,7 +129,7 @@ module.exports = {
 
     dbconnection.getConnection((err, connection) => {
       if (err) {
-        return next({ status: 500, message: err.sqlMessage })
+        return next({ status: 500, message: err.message })
       }
 
       connection.query(
@@ -181,7 +181,7 @@ module.exports = {
     const id = req.params.id
     dbconnection.getConnection((err, connection) => {
       if (err) {
-        return next({ status: 500, message: err.sqlMessage })
+        return next({ status: 500, message: err.message })
       }
 
       connection.query(
@@ -271,7 +271,7 @@ module.exports = {
     const id = req.params.id
     dbconnection.getConnection((err, connection) => {
       if (err) {
-        return next({ status: 500, message: err.sqlMessage })
+        return next({ status: 500, message: err.message })
       }
 
       connection.query(
@@ -314,7 +314,7 @@ module.exports = {
   participate: (req, res, next) => {
     dbconnection.getConnection((err, connection) => {
       if (err) {
-        return next({ status: 500, message: err.sqlMessage })
+        return next({ status: 500, message: err.message })
       }
 
       connection.query(

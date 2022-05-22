@@ -39,7 +39,7 @@ module.exports = {
       if (err) {
         return next({
           status: 500,
-          message: err.sqlMessage,
+          message: err.message,
         })
       }
 

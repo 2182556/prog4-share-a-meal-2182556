@@ -20,7 +20,7 @@ const userSchema = joi.object({
   emailAdress: joi.string().required().email().pattern(emailRegExp),
   street: joi.string().required(),
   city: joi.string().required(),
-  isActive: joi.boolean().required(),
+  isActive: joi.boolean().default(true),
   password: joi.string().required().pattern(passwordRegExp).messages({
     'string.pattern.base': passwordInvalidMessage,
   }),
@@ -55,7 +55,7 @@ module.exports = {
         if (err) {
           return next({
             status: 500,
-            message: err.sqlMessage,
+            message: err.message,
           })
         }
 
@@ -90,7 +90,7 @@ module.exports = {
       if (err) {
         return next({
           status: 500,
-          message: err.sqlMessage,
+          message: err.message,
         })
       }
 
@@ -129,7 +129,7 @@ module.exports = {
 
       dbconnection.getConnection((err, connection) => {
         if (err) {
-          return next({ status: 500, message: err.sqlMessage })
+          return next({ status: 500, message: err.message })
         }
 
         connection.query(
@@ -212,7 +212,7 @@ module.exports = {
     logger.info(queryParams)
 
     dbconnection.getConnection((err, connection) => {
-      if (err) return next({ status: 500, message: err.sqlMessage })
+      if (err) return next({ status: 500, message: err.message })
 
       connection.query(queryString, queryParams, (error, results, fields) => {
         connection.release()
@@ -236,7 +236,7 @@ module.exports = {
     const id = req.userId
     dbconnection.getConnection((err, connection) => {
       if (err) {
-        return next({ status: 500, message: error.sqlMessage })
+        return next({ status: 500, message: error.message })
       }
 
       connection.query(
@@ -267,7 +267,7 @@ module.exports = {
     const id = req.params.id
     dbconnection.getConnection((err, connection) => {
       if (err) {
-        return next({ status: 500, message: err.sqlMessage })
+        return next({ status: 500, message: err.message })
       }
 
       connection.query(
@@ -301,7 +301,7 @@ module.exports = {
 
     dbconnection.getConnection((err, connection) => {
       if (err) {
-        return next({ status: 500, message: err.sqlMessage })
+        return next({ status: 500, message: err.message })
       }
 
       if (id == req.userId) {
@@ -395,7 +395,7 @@ module.exports = {
     const id = req.params.id
     dbconnection.getConnection((err, connection) => {
       if (err) {
-        return next({ status: 500, message: err.sqlMessage })
+        return next({ status: 500, message: err.message })
       }
 
       if (id == req.userId) {
