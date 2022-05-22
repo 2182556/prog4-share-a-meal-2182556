@@ -77,7 +77,7 @@ To be able to use the API on localhost, use ```npm run start``` (equivalent to `
 
 If you want to deploy the application to Heroku, you need to have a Heroku account. Create a new application and change heroku_app_name in main.yml. You can add the secret variables to a Github environment.  
 
-
+***
 
 # API Usage 
 
@@ -138,6 +138,8 @@ The columns in italics cannot be given in a request body, id can however be give
 | GET       | /api/meal/{id}/participate | Authorization: Bearer token  |
 
 For more in-depth information about the request body and responses of each route, please refer to the [SWAGGER documentation](https://shareameal-api.herokuapp.com/docs/).
+
+***
 
 # Author
 If you need me for anything, you can send an email to je.boellaard@student.avans.nl. I am the author of this project, however a lot of the code is based on code from the course Programming 4 from the bachelor Computer Science at Avans Breda. The example code for this project can be found [here](https://github.com/avansinformatica/programmeren-4-shareameal).
