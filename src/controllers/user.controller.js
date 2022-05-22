@@ -142,7 +142,8 @@ module.exports = {
         }
 
         connection.query(
-          'INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) VALUES(?,?,?,?,?,?,?,?,?);',
+          'INSERT INTO user (firstName,lastName,isActive,emailAdress,password,phoneNumber,roles,street,city) VALUES(?,?,?,?,?,?,?,?,?); ' +
+            'SELECT LAST_INSERT_ID() as userId;',
           [
             user.firstName,
             user.lastName,
@@ -161,26 +162,16 @@ module.exports = {
               logger.error(error.sqlMessage)
               return next({ status: 500, message: error.sqlMessage })
             }
-            connection.query(
-              'SELECT LAST_INSERT_ID() as userId;',
-              (error, results, fields) => {
-                connection.release()
-                if (error) {
-                  logger.error(error.sqlMessage)
-                  return next({ status: 500, message: error.sqlMessage })
-                }
-                logger.info(results)
-                user = {
-                  id: results[0].userId,
-                  ...user,
-                }
-                logger.info('Succesfully added user, returning ', user)
-                return res.status(201).json({
-                  status: 201,
-                  result: user,
-                })
-              }
-            )
+            logger.info(results)
+            user = {
+              id: results[1][0].userId,
+              ...user,
+            }
+            logger.info('Succesfully added user, returning ', user)
+            return res.status(201).json({
+              status: 201,
+              result: user,
+            })
           }
         )
       })

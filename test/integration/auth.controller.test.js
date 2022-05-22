@@ -28,6 +28,13 @@ const INSERT_MEALS =
   "(1, 'Meal A', 'description', 'image url', '2022-06-22 17:35:00', 5, 6.50, 1, 'lactose,gluten')," +
   "(2, 'Meal B', 'description', 'image url', '2022-07-22 18:00:00', 5, 6.50, 2, '');"
 
+const FULL_QUERY =
+  CLEAR_MEALS_TABLE +
+  CLEAR_PARTICIPANTS_TABLE +
+  CLEAR_USERS_TABLE +
+  INSERT_USERS +
+  INSERT_MEALS
+
 describe('Login', () => {
   before((done) => {
     token = jwt.sign({ id: 1 }, jwtPrivateKey)
@@ -37,23 +44,7 @@ describe('Login', () => {
     dbconnection.getConnection((err, connection) => {
       if (err) throw err
 
-      connection.query(CLEAR_MEALS_TABLE, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(CLEAR_PARTICIPANTS_TABLE, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(CLEAR_USERS_TABLE, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(INSERT_USERS, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(INSERT_MEALS, (error, results, fields) => {
+      connection.query(FULL_QUERY, (error, results, fields) => {
         connection.release()
         if (error) throw error
         done()

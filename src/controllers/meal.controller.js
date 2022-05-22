@@ -47,7 +47,8 @@ module.exports = {
         .replace('T', ' ')
 
       connection.query(
-        'INSERT INTO meal (name,description,isActive,isVega,isVegan,isToTakeHome,dateTime,imageUrl,allergenes,maxAmountOfParticipants,price,cookId) VALUES(?,?,?,?,?,?,?,?,?,?,?,?);',
+        'INSERT INTO meal (name,description,isActive,isVega,isVegan,isToTakeHome,dateTime,imageUrl,allergenes,maxAmountOfParticipants,price,cookId) VALUES(?,?,?,?,?,?,?,?,?,?,?,?);' +
+          'SELECT LAST_INSERT_ID() as mealId;',
         [
           meal.name,
           meal.description,
@@ -71,38 +72,27 @@ module.exports = {
           }
 
           connection.query(
-            'SELECT LAST_INSERT_ID() as mealId;',
+            'INSERT INTO meal_participants_user VALUES (?,?)',
+            [results[1][0].mealId, req.userId],
             (error, results, fields) => {
               connection.release()
               if (error) {
                 logger.error(error.sqlMessage)
                 return next({ status: 500, message: error.sqlMessage })
               }
-
-              connection.query(
-                'INSERT INTO meal_participants_user VALUES (?,?)',
-                [results[0].mealId, req.userId],
-                (error, results, fields) => {
-                  connection.release()
-                  if (error) {
-                    logger.error(error.sqlMessage)
-                    return next({ status: 500, message: error.sqlMessage })
-                  }
-                }
-              )
-
-              meal = {
-                id: results[0].mealId,
-                cookId: req.userId,
-                ...meal,
-              }
-              logger.info('Succesfully added meal, returning meal')
-              return res.status(201).json({
-                status: 201,
-                result: meal,
-              })
             }
           )
+
+          meal = {
+            id: results[1][0].mealId,
+            cookId: req.userId,
+            ...meal,
+          }
+          logger.info('Succesfully added meal, returning meal')
+          return res.status(201).json({
+            status: 201,
+            result: meal,
+          })
         }
       )
     })

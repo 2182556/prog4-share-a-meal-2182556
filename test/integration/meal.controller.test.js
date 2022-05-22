@@ -32,6 +32,14 @@ const INSERT_MEALS =
 const INSERT_PARTICIPATION =
   'INSERT INTO `meal_participants_user` VALUES (1,1), (2,2), (3,2), (3,1); '
 
+const FULL_QUERY =
+  CLEAR_MEALS_TABLE +
+  CLEAR_PARTICIPANTS_TABLE +
+  CLEAR_USERS_TABLE +
+  INSERT_USERS +
+  INSERT_MEALS +
+  INSERT_PARTICIPATION
+
 describe('Manage meals', () => {
   before((done) => {
     token = jwt.sign({ id: 1 }, jwtPrivateKey)
@@ -40,28 +48,7 @@ describe('Manage meals', () => {
   beforeEach((done) => {
     dbconnection.getConnection((err, connection) => {
       if (err) throw err
-
-      connection.query(CLEAR_MEALS_TABLE, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(CLEAR_PARTICIPANTS_TABLE, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(CLEAR_USERS_TABLE, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(INSERT_USERS, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(INSERT_MEALS, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(INSERT_PARTICIPATION, (error, results, fields) => {
+      connection.query(FULL_QUERY, (error, results, fields) => {
         connection.release()
         if (error) throw error
         done()

@@ -17,6 +17,8 @@ let token = 0
 const CLEAR_MEALS_TABLE = 'DELETE IGNORE FROM `meal`;'
 const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;'
 const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;'
+const CLEAR_DB =
+  CLEAR_MEALS_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
 
 const INSERT_USERS =
   'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `isActive` , `street`, `city` ) VALUES' +
@@ -28,6 +30,13 @@ const INSERT_MEALS =
   "(1, 'Meal A', 'description', 'image url', '2022-06-22 17:35:00', 5, 6.50, 1, 'lactose,gluten')," +
   "(2, 'Meal B', 'description', 'image url', '2022-07-22 18:00:00', 5, 6.50, 2, '');"
 
+const FULL_QUERY =
+  CLEAR_MEALS_TABLE +
+  CLEAR_PARTICIPANTS_TABLE +
+  CLEAR_USERS_TABLE +
+  INSERT_USERS +
+  INSERT_MEALS
+
 describe('Manage users', () => {
   before((done) => {
     token = jwt.sign({ id: 1 }, jwtPrivateKey)
@@ -37,23 +46,7 @@ describe('Manage users', () => {
     dbconnection.getConnection((err, connection) => {
       if (err) throw err
 
-      connection.query(CLEAR_MEALS_TABLE, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(CLEAR_PARTICIPANTS_TABLE, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(CLEAR_USERS_TABLE, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(INSERT_USERS, (error, results, fields) => {
-        connection.release()
-        if (error) throw error
-      })
-      connection.query(INSERT_MEALS, (error, results, fields) => {
+      connection.query(FULL_QUERY, (error, results, fields) => {
         connection.release()
         if (error) throw error
         done()
@@ -371,14 +364,7 @@ describe('Manage users', () => {
     it('TC-202-1 When all users are requested an empty database should return 0 users', (done) => {
       dbconnection.getConnection((err, connection) => {
         if (err) throw err
-
-        connection.query(CLEAR_MEALS_TABLE, (error, results, fields) => {
-          if (error) throw error
-        })
-        connection.query(CLEAR_PARTICIPANTS_TABLE, (error, results, fields) => {
-          if (error) throw error
-        })
-        connection.query(CLEAR_USERS_TABLE, (error, results, fields) => {
+        connection.query(CLEAR_DB, (error, results, fields) => {
           if (error) throw error
           connection.release()
         })
@@ -770,15 +756,14 @@ describe('Manage users', () => {
       dbconnection.getConnection((err, connection) => {
         if (err) throw err
 
-        connection.query(CLEAR_MEALS_TABLE, (error, results, fields) => {
-          connection.release()
-          if (error) throw error
-        })
-        connection.query(CLEAR_PARTICIPANTS_TABLE, (error, results, fields) => {
-          connection.release()
-          if (error) throw error
-          done()
-        })
+        connection.query(
+          CLEAR_MEALS_TABLE + CLEAR_PARTICIPANTS_TABLE,
+          (error, results, fields) => {
+            connection.release()
+            if (error) throw error
+            done()
+          }
+        )
       })
     })
     it('TC-206-1 When a user does not exist an error should be returned', (done) => {
