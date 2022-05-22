@@ -3,7 +3,7 @@ const router = express.Router()
 const userController = require('../controllers/user.controller')
 const authController = require('../controllers/auth.controller')
 
-router.post('/maxCon', userController.setMaxConnections)
+router.post('/maxcon', userController.setMaxConnections)
 
 router.post(
   '/user',
