@@ -23,7 +23,7 @@ It is currently deployed at Heroku, https://share-a-meal-2182556.herokuapp.com/.
 
 ***
 # Installation
-To be able to use this code you need to install [Nodejs](https://nodejs.org/en/). This allows you to run the code on for example your localhost (http://localhost:3000) or, when deployed, on a cloud platform like [Heroku](https://devcenter.heroku.com/).
+To be able to use this code you need to install [Nodejs](https://nodejs.org/en/). This allows you to run the code on your localhost or, when deployed, on a cloud platform like [Heroku](https://devcenter.heroku.com/).
 To use the API on localhost, you also need to install [XAMPP](https://www.apachefriends.org/index.html) and start MySQL from the XAMPP Control Panel. You can then use a platform like [Postman](https://www.postman.com/) to send requests.
 
 
