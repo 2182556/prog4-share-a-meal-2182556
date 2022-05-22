@@ -39,7 +39,7 @@ module.exports = {
 
     const { error, value } = userSchema.validate(req.body)
     if (error) {
-      logger.error(error.message)
+      logger.warn(error.message)
       return next({
         status: 400,
         message: error.message,
@@ -51,11 +51,12 @@ module.exports = {
   checkUniqueEmail: (req, res, next) => {
     logger.info('checkUniqueEmail called')
     if (req.body.emailAdress) {
-      dbconnection.getConnection((err, connection) => {
-        if (err) {
+      dbconnection.getConnection((error, connection) => {
+        if (error) {
+          logger.error(error.message)
           return next({
             status: 500,
-            message: err.message,
+            message: error.message,
           })
         }
 
@@ -66,6 +67,7 @@ module.exports = {
             connection.release()
 
             if (error) {
+              logger.error(error.sqlMessage)
               return next({
                 status: 500,
                 message: error.sqlMessage,
@@ -73,6 +75,7 @@ module.exports = {
             }
             var user = Object.assign({}, results[0])
             if (results.length > 0 && user.id != req.params.id) {
+              logger.warn('Email already in use')
               return next({
                 status: 409,
                 message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
@@ -86,11 +89,12 @@ module.exports = {
   },
   checkIfUserExists: (req, res, next) => {
     logger.info('checkIfUserExists called')
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
         return next({
           status: 500,
-          message: err.message,
+          message: error.message,
         })
       }
 
@@ -100,6 +104,7 @@ module.exports = {
         (error, results, fields) => {
           connection.release()
           if (error) {
+            logger.error(error.sqlMessage)
             return next({
               status: 500,
               message: error.sqlMessage,
@@ -110,9 +115,10 @@ module.exports = {
             req.existingUser = Object.assign({}, results[0])
             return next()
           } else {
+            logger.warn('Could not find user')
             return next({
               status: 400,
-              message: `User does not exist`,
+              message: 'User does not exist',
             })
           }
         }
@@ -122,14 +128,17 @@ module.exports = {
   addUser: (req, res, next) => {
     logger.info('addUser called')
     let user = req.validatedUser
-    bcrypt.hash(user.password, saltRounds, (err, hash) => {
-      if (err)
+    bcrypt.hash(user.password, saltRounds, (error, hash) => {
+      if (error) {
+        logger.error('Could not encrypt password')
         return next({ status: 500, message: 'Could not encrypt password' })
+      }
       user.password = hash
 
-      dbconnection.getConnection((err, connection) => {
-        if (err) {
-          return next({ status: 500, message: err.message })
+      dbconnection.getConnection((error, connection) => {
+        if (error) {
+          logger.error(error.message)
+          return next({ status: 500, message: error.message })
         }
 
         connection.query(
@@ -163,9 +172,9 @@ module.exports = {
                 logger.info(results)
                 user = {
                   id: results[0].userId,
-                  // isActive: user.isActive ? true : false,
                   ...user,
                 }
+                logger.info('Succesfully added user, returning ', user)
                 return res.status(201).json({
                   status: 201,
                   result: user,
@@ -211,8 +220,11 @@ module.exports = {
     logger.info(queryString)
     logger.info(queryParams)
 
-    dbconnection.getConnection((err, connection) => {
-      if (err) return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
+      }
 
       connection.query(queryString, queryParams, (error, results, fields) => {
         connection.release()
@@ -224,6 +236,7 @@ module.exports = {
           results.forEach((i) => {
             i.isActive = i.isActive ? true : false
           })
+          logger.info('Succesfully retrieved all users')
           return res.status(200).json({
             status: 200,
             result: results,
@@ -234,8 +247,9 @@ module.exports = {
   },
   getUserProfile: (req, res, next) => {
     const id = req.userId
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
         return next({ status: 500, message: error.message })
       }
 
@@ -244,15 +258,18 @@ module.exports = {
         (error, results, fields) => {
           connection.release()
           if (error) {
+            logger.error(error.sqlMessage)
             return next({ status: 500, message: error.sqlMessage })
           }
           if (results && results.length == 1) {
             results[0].isActive = results[0].isActive ? true : false
+            logger.info('Succesfully retrieved user profile')
             return res.status(200).json({
               status: 200,
               result: results[0],
             })
           } else {
+            logger.error('Result is empty even though user is logged in')
             return next({
               status: 500,
               message: `Something went wrong, could not find logged in user`,
@@ -263,11 +280,12 @@ module.exports = {
     })
   },
   getUserById: (req, res, next) => {
-    console.log('getUserById called')
+    logger.info('getUserById called')
     const id = req.params.id
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
-        return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
       }
 
       connection.query(
@@ -276,16 +294,19 @@ module.exports = {
           connection.release()
 
           if (error) {
+            logger.error(error.sqlMessage)
             return next({ status: 500, message: error.sqlMessage })
           }
           if (results.length > 0) {
             const { password, ...userinfo } = results[0]
             userinfo.isActive = userinfo.isActive ? true : false
+            logger.info('Succesfully retrieved user by id')
             return res.status(200).json({
               status: 200,
               result: userinfo,
             })
           } else {
+            logger.warn('Could not find user')
             return next({
               status: 404,
               message: `User with id ${id} not found`,
@@ -299,9 +320,10 @@ module.exports = {
     logger.info('updateUser called')
     const id = req.params.id
 
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
-        return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
       }
 
       if (id == req.userId) {
@@ -341,11 +363,14 @@ module.exports = {
 
         const { error, value } = userSchema.validate(req.body)
         if (error) {
+          logger.warn(error.message)
           return next({ status: 400, message: error.message })
         }
-        bcrypt.hash(value.password, saltRounds, (err, hash) => {
-          if (err)
+        bcrypt.hash(value.password, saltRounds, (error, hash) => {
+          if (error) {
+            logger.error('Could not encrypt password')
             return next({ status: 500, message: 'Could not encrypt password' })
+          }
           value.password = hash
 
           connection.query(
@@ -366,6 +391,7 @@ module.exports = {
               connection.release()
 
               if (error) {
+                logger.error(error.sqlMessage)
                 return next({ status: 500, message: error.sqlMessage })
               }
               const { password, ...userinfo } = value
@@ -383,9 +409,9 @@ module.exports = {
           )
         })
       } else {
-        logger.info('id does not match')
+        logger.warn('Not authorized')
         return next({
-          status: 401,
+          status: 403,
           message: 'You are not authorized to update this user',
         })
       }
@@ -393,9 +419,10 @@ module.exports = {
   },
   deleteUser: (req, res, next) => {
     const id = req.params.id
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
-        return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
       }
 
       if (id == req.userId) {
@@ -404,9 +431,10 @@ module.exports = {
           (error, results, fields) => {
             connection.release()
             if (error) {
+              logger.error(error.sqlMessage)
               return next({ status: 500, message: error.sqlMessage })
             }
-            console.log('User succesfully deleted')
+            logger.info('User succesfully deleted')
             return res.status(200).json({
               status: 200,
               message: `User with id ${id} was deleted.`,
@@ -414,7 +442,7 @@ module.exports = {
           }
         )
       } else {
-        logger.info('id does not match')
+        logger.warn('Not authorized')
         return next({
           status: 403,
           message: 'You are not authorized to delete this user',

@@ -29,17 +29,19 @@ module.exports = {
     const { error, value } = loginSchema.validate(req.body)
 
     if (error) {
+      logger.warn('Input not valid')
       return next({
         status: 400,
         message: error.message,
       })
     }
     const queryString = 'SELECT * FROM `user` WHERE `emailAdress`=?'
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
         return next({
           status: 500,
-          message: err.message,
+          message: error.message,
         })
       }
 
@@ -47,10 +49,10 @@ module.exports = {
         queryString,
         [value.emailAdress],
         (error, results, fields) => {
-          logger.debug('query made')
           connection.release()
 
           if (error) {
+            logger.error(error.sqlMessage)
             return next({
               status: 500,
               message: error.sqlMessage,
@@ -69,8 +71,8 @@ module.exports = {
                     payload,
                     jwtPrivateKey,
                     { expiresIn: '25d' },
-                    (err, token) => {
-                      if (err) return next(err)
+                    (error, token) => {
+                      if (error) return next(error)
                       if (token) {
                         userinfo.isActive = userinfo.isActive ? true : false
                         logger.info('User logged in, sending ', userinfo)
@@ -82,7 +84,7 @@ module.exports = {
                     }
                   )
                 } else {
-                  logger.debug('Password does not match')
+                  logger.warn('Password does not match')
                   return next({
                     status: 400,
                     message: 'The password does not match the emailAdress',
@@ -90,7 +92,7 @@ module.exports = {
                 }
               })
           } else {
-            logger.debug('User does not exist')
+            logger.warn('User does not exist')
             return next({
               status: 404,
               message: 'There was no user found with this emailAdress',
@@ -113,13 +115,13 @@ module.exports = {
     } else {
       const token = authHeader.substring(7, authHeader.length) //stripping 'Bearer' from token
 
-      jwt.verify(token, jwtPrivateKey, (err, payload) => {
-        if (err) {
-          logger.warn('not authorized')
+      jwt.verify(token, jwtPrivateKey, (error, payload) => {
+        if (error) {
+          logger.warn('Not authorized')
           return next({ status: 401, message: 'Not authorized' })
         }
         if (payload) {
-          logger.debug('token is valid', payload)
+          logger.info('Token is valid')
           req.userId = payload.id
           return next()
         }

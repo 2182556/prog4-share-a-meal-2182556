@@ -24,18 +24,22 @@ module.exports = {
     logger.info('validateMeal called')
 
     const { error, value } = mealSchema.validate(req.body)
-    if (error) return next({ status: 400, message: error.message })
+    if (error) {
+      logger.warn(error.message)
+      return next({ status: 400, message: error.message })
+    }
 
     req.validatedMeal = value
     return next()
   },
   addMeal: (req, res, next) => {
-    console.log('addMeal called')
+    logger.info('addMeal called')
     let meal = req.validatedMeal
 
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
-        return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
       }
       let formattedDateTime = new Date(meal.dateTime)
         .toISOString()
@@ -62,6 +66,7 @@ module.exports = {
           connection.release()
 
           if (error) {
+            logger.error(error.sqlMessage)
             return next({ status: 500, message: error.sqlMessage })
           }
 
@@ -70,6 +75,7 @@ module.exports = {
             (error, results, fields) => {
               connection.release()
               if (error) {
+                logger.error(error.sqlMessage)
                 return next({ status: 500, message: error.sqlMessage })
               }
 
@@ -78,8 +84,10 @@ module.exports = {
                 [results[0].mealId, req.userId],
                 (error, results, fields) => {
                   connection.release()
-                  if (error)
+                  if (error) {
+                    logger.error(error.sqlMessage)
                     return next({ status: 500, message: error.sqlMessage })
+                  }
                 }
               )
 
@@ -88,6 +96,7 @@ module.exports = {
                 cookId: req.userId,
                 ...meal,
               }
+              logger.info('Succesfully added meal, returning meal')
               return res.status(201).json({
                 status: 201,
                 result: meal,
@@ -99,15 +108,19 @@ module.exports = {
     })
   },
   getAllMeals: (req, res, next) => {
-    console.log('getAllMeals called')
+    logger.info('getAllMeals called')
 
-    dbconnection.getConnection((err, connection) => {
-      if (err) return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
+      }
 
       connection.query('SELECT * FROM meal', (error, results, fields) => {
         connection.release()
 
         if (error) {
+          logger.error(error.sqlMessage)
           return next({ status: 500, message: error.sqlMessage })
         }
         results.forEach((i) => {
@@ -116,6 +129,7 @@ module.exports = {
           i.isVega = i.isVega ? true : false
           i.isVegan = i.isVegan ? true : false
         })
+        logger.info('Succesfully retrieved all meals')
         return res.status(200).json({
           status: 200,
           result: results,
@@ -124,12 +138,13 @@ module.exports = {
     })
   },
   getMealById: (req, res, next) => {
-    console.log('getMealById called')
+    logger.info('getMealById called')
     const id = req.params.id
 
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
-        return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
       }
 
       connection.query(
@@ -138,6 +153,7 @@ module.exports = {
           connection.release()
 
           if (error) {
+            logger.error(error.sqlMessage)
             return next({ status: 500, message: error.sqlMessage })
           }
           if (results.length > 0) {
@@ -145,12 +161,14 @@ module.exports = {
             results[0].isToTakeHome = results[0].isToTakeHome ? true : false
             results[0].isVega = results[0].isVega ? true : false
             results[0].isVegan = results[0].isVegan ? true : false
+            logger.info('Meal found, sending ', results[0])
             return res.status(200).json({
               status: 200,
               result: results[0],
             })
           } else {
-            return next({ status: 404, message: `Meal could not be found` })
+            logger.warn('Meal could not be found')
+            return next({ status: 404, message: 'Meal could not be found' })
           }
         }
       )
@@ -175,13 +193,15 @@ module.exports = {
 
     const { error, value } = requiredFields.validate(req.body)
     if (error) {
+      logger.warn(error.message)
       return next({ status: 400, message: error.message })
     }
 
     const id = req.params.id
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
-        return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
       }
 
       connection.query(
@@ -190,6 +210,7 @@ module.exports = {
         (error, results, fields) => {
           connection.release()
           if (error) {
+            logger.error(error.sqlMessage)
             return next({ status: 500, message: error.sqlMessage })
           }
           if (results.length > 0) {
@@ -215,6 +236,7 @@ module.exports = {
               const { error, value } = updateMealSchema.validate(req.body)
               const newDateTime = new Date(value.dateTime)
               if (error) {
+                logger.warn(error.message)
                 return next({ status: 400, message: error.message })
               }
               connection.query(
@@ -237,6 +259,7 @@ module.exports = {
                   connection.release()
 
                   if (error) {
+                    logger.error(error.sqlMessage)
                     return next({ status: 500, message: error.sqlMessage })
                   }
                   value.isActive = value.isActive ? true : false
@@ -248,6 +271,7 @@ module.exports = {
                     cookId: req.userId,
                     ...value,
                   }
+                  logger.info('Succesfully updated meal, returning ', meal)
                   return res.status(200).json({
                     status: 200,
                     result: meal,
@@ -255,13 +279,15 @@ module.exports = {
                 }
               )
             } else {
+              logger.warn('Not authorised')
               return next({
                 status: 403,
-                message: `You are not authorized to alter this meal`,
+                message: 'You are not authorized to alter this meal',
               })
             }
           } else {
-            return next({ status: 404, message: `Meal does not exist` })
+            logger.warn('Meal could not be found')
+            return next({ status: 404, message: 'Meal does not exist' })
           }
         }
       )
@@ -269,9 +295,10 @@ module.exports = {
   },
   deleteMeal: (req, res, next) => {
     const id = req.params.id
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
-        return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
       }
 
       connection.query(
@@ -279,6 +306,7 @@ module.exports = {
         (error, results, fields) => {
           connection.release()
           if (error) {
+            logger.error(error.sqlMessage)
             return next({ status: 500, message: error.sqlMessage })
           } else {
             if (results.length > 0) {
@@ -288,6 +316,7 @@ module.exports = {
                   (error, results, fields) => {
                     connection.release()
                     if (error) {
+                      logger.error(error.sqlMessage)
                       return next({ status: 500, message: error.sqlMessage })
                     }
                     logger.info('User succesfully deleted')
@@ -298,12 +327,14 @@ module.exports = {
                   }
                 )
               } else {
+                logger.warn('Not authorized')
                 return next({
                   status: 403,
                   message: `You are not authorized to delete this meal`,
                 })
               }
             } else {
+              logger.warn('Meal could not be found')
               return next({ status: 404, message: `Meal does not exist` })
             }
           }
@@ -312,9 +343,10 @@ module.exports = {
     })
   },
   participate: (req, res, next) => {
-    dbconnection.getConnection((err, connection) => {
-      if (err) {
-        return next({ status: 500, message: err.message })
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({ status: 500, message: error.message })
       }
 
       connection.query(
@@ -322,15 +354,20 @@ module.exports = {
         [req.params.id],
         (error, results, fields) => {
           connection.release()
-          if (error) return next({ status: 500, message: error.sqlMessage })
+          if (error) {
+            logger.error(error.sqlMessage)
+            return next({ status: 500, message: error.sqlMessage })
+          }
           if (results.length > 0) {
             connection.query(
               'SELECT * FROM meal_participants_user WHERE mealId=?',
               [req.params.id],
               (error, results, fields) => {
                 connection.release()
-                if (error)
+                if (error) {
+                  logger.error(error.sqlMessage)
                   return next({ status: 500, message: error.sqlMessage })
+                }
                 let numberOfParticipants = results.length
                 participating = false
                 results.forEach((i) => {
@@ -342,9 +379,12 @@ module.exports = {
                     [req.params.id, req.userId],
                     (error, results, fields) => {
                       connection.release()
-                      if (error)
+                      if (error) {
+                        logger.error(error.sqlMessage)
                         return next({ status: 500, message: error.sqlMessage })
+                      }
                       if (results.affectedRows > 0) {
+                        logger.info('Succesfully removed participation')
                         return res.status(200).json({
                           status: 200,
                           result: {
@@ -362,9 +402,12 @@ module.exports = {
                     [req.params.id, req.userId],
                     (error, results, fields) => {
                       connection.release()
-                      if (error)
+                      if (error) {
+                        logger.error(error.sqlMessage)
                         return next({ status: 500, message: error.sqlMessage })
+                      }
                       if (results.affectedRows > 0) {
+                        logger.info('Succesfully added participation')
                         return res.status(200).json({
                           status: 200,
                           result: {
@@ -380,6 +423,7 @@ module.exports = {
               }
             )
           } else {
+            logger.warn('Could not find meal')
             return next({ status: 404, message: 'Meal does not exist' })
           }
         }

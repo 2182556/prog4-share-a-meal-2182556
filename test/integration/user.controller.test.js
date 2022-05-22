@@ -357,7 +357,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, result } = res.body
-          console.log(status, result)
           status.should.equal(201)
           result.should.be
             .an('object')
@@ -534,7 +533,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, result } = res.body
-          console.log(status, result)
           status.should.equal(200)
           result.should.be
             .an('object')
@@ -564,7 +562,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(400)
           message.should.be.a('string').that.equals('"emailAdress" is required')
           done()
@@ -591,7 +588,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(400)
           message.should.be
             .a('string')
@@ -616,7 +612,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(400)
           message.should.be
             .a('string')
@@ -641,7 +636,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(400)
           message.should.be
             .a('string')
@@ -666,7 +660,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(400)
           message.should.be
             .a('string')
@@ -691,7 +684,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(400)
           message.should.be
             .a('string')
@@ -736,7 +728,7 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          status.should.equal(401)
+          status.should.equal(403)
           message.should.be
             .a('string')
             .that.equals('You are not authorized to update this user')
@@ -797,7 +789,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status)
           status.should.equal(400)
           message.should.be.a('string').that.equals('User does not exist')
           done()
@@ -844,7 +835,6 @@ describe('Manage users', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(200)
           message.should.be
             .a('string')

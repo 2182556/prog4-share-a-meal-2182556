@@ -256,7 +256,6 @@ describe('Manage meals', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(400)
           message.should.be.a('string').that.equals('"name" is required')
         })
@@ -281,7 +280,6 @@ describe('Manage meals', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(400)
           message.should.be.a('string').that.equals('"price" is required')
         })
@@ -306,7 +304,6 @@ describe('Manage meals', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(400)
           message.should.be
             .a('string')
@@ -441,7 +438,6 @@ describe('Manage meals', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, result } = res.body
-          console.log(status, result)
           status.should.equal(200)
           result.should.be
             .an('object')
@@ -518,7 +514,6 @@ describe('Manage meals', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status, message)
           status.should.equal(200)
           message.should.be
             .a('string')

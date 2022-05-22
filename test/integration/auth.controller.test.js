@@ -142,7 +142,6 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
-          logger.debug('Secret1')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -168,7 +167,6 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
-          logger.debug('secret11')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -194,7 +192,6 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
-          logger.debug('Secretone')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -220,7 +217,6 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
-          logger.debug('SECRET11')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -246,7 +242,6 @@ describe('Login', () => {
           roles: 'editor,guest',
         })
         .end((err, res) => {
-          logger.debug('Secret1\n1')
           res.should.be.an('object')
           let { status, message } = res.body
           status.should.equal(400)
@@ -270,7 +265,6 @@ describe('Login', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, message } = res.body
-          console.log(status)
           status.should.equal(404)
           message.should.be
             .a('string')
@@ -290,7 +284,6 @@ describe('Login', () => {
         .end((err, res) => {
           res.should.be.an('object')
           let { status, result } = res.body
-          console.log(status)
           status.should.equal(200)
           result.should.be.an('object').that.includes.key('token')
           result.should.include({ id: 1 })
