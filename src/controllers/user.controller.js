@@ -50,7 +50,7 @@ module.exports = {
   },
   checkUniqueEmail: (req, res, next) => {
     logger.info('checkUniqueEmail called')
-    if (req.body.emailAdress) {
+    if (req.body.emailAdress != undefined) {
       dbconnection.getConnection((error, connection) => {
         if (error) {
           logger.error(error.message)
