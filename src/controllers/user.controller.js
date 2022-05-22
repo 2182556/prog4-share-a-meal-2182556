@@ -34,6 +34,32 @@ const userSchema = joi.object({
 })
 
 module.exports = {
+  setMaxConnections: (req, res, next) => {
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({
+          status: 500,
+          message: error.message,
+        })
+      } else {
+        connection.query(
+          `SET GLOBAL max_connections = 1024;`,
+          [req.params.id],
+          (error, results, fields) => {
+            connection.release()
+            if (error) {
+              logger.error(error.sqlMessage)
+              return next({
+                status: 500,
+                message: error.sqlMessage,
+              })
+            }
+          }
+        )
+      }
+    })
+  },
   validateUser: (req, res, next) => {
     logger.info('validateUser called')
 
@@ -44,9 +70,49 @@ module.exports = {
         status: 400,
         message: error.message,
       })
+    } else {
+      req.validatedUser = value
+      return next()
     }
-    req.validatedUser = value
-    return next()
+  },
+  checkIfUserExists: (req, res, next) => {
+    logger.info('checkIfUserExists called')
+    dbconnection.getConnection((error, connection) => {
+      if (error) {
+        logger.error(error.message)
+        return next({
+          status: 500,
+          message: error.message,
+        })
+      } else {
+        connection.query(
+          `SELECT * FROM user WHERE id=?;`,
+          [req.params.id],
+          (error, results, fields) => {
+            connection.release()
+            if (error) {
+              logger.error(error.sqlMessage)
+              return next({
+                status: 500,
+                message: error.sqlMessage,
+              })
+            } else {
+              if (results.length > 0) {
+                logger.info('User found, adding user to request')
+                req.existingUser = Object.assign({}, results[0])
+                return next()
+              } else {
+                logger.warn('Could not find user')
+                return next({
+                  status: 400,
+                  message: 'User does not exist',
+                })
+              }
+            }
+          }
+        )
+      }
+    })
   },
   checkUniqueEmail: (req, res, next) => {
     logger.info('checkUniqueEmail called')
@@ -58,72 +124,39 @@ module.exports = {
             status: 500,
             message: error.message,
           })
+        } else {
+          connection.query(
+            'SELECT * FROM user WHERE emailAdress=?;',
+            [req.body.emailAdress],
+            (error, results, fields) => {
+              connection.release()
+
+              if (error) {
+                logger.error(error.sqlMessage)
+                return next({
+                  status: 500,
+                  message: error.sqlMessage,
+                })
+              } else {
+                logger.debug(results[0])
+                var user = Object.assign({}, results[0])
+                if (results.length > 0 && user.id != req.params.id) {
+                  logger.warn('Email already in use')
+                  return next({
+                    status: 409,
+                    message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
+                  })
+                } else {
+                  return next()
+                }
+              }
+            }
+          )
         }
-
-        connection.query(
-          'SELECT * FROM user WHERE emailAdress=?;',
-          [req.body.emailAdress],
-          (error, results, fields) => {
-            connection.release()
-
-            if (error) {
-              logger.error(error.sqlMessage)
-              return next({
-                status: 500,
-                message: error.sqlMessage,
-              })
-            }
-            var user = Object.assign({}, results[0])
-            if (results.length > 0 && user.id != req.params.id) {
-              logger.warn('Email already in use')
-              return next({
-                status: 409,
-                message: `The email address ${req.body.emailAdress} is already in use, please use a different emailaddress.`,
-              })
-            }
-          }
-        )
       })
+    } else {
+      return next()
     }
-    return next()
-  },
-  checkIfUserExists: (req, res, next) => {
-    logger.info('checkIfUserExists called')
-    dbconnection.getConnection((error, connection) => {
-      if (error) {
-        logger.error(error.message)
-        return next({
-          status: 500,
-          message: error.message,
-        })
-      }
-
-      connection.query(
-        `SELECT * FROM user WHERE id=?;`,
-        [req.params.id],
-        (error, results, fields) => {
-          connection.release()
-          if (error) {
-            logger.error(error.sqlMessage)
-            return next({
-              status: 500,
-              message: error.sqlMessage,
-            })
-          }
-          if (results.length > 0) {
-            logger.info('User found, adding user to request')
-            req.existingUser = Object.assign({}, results[0])
-            return next()
-          } else {
-            logger.warn('Could not find user')
-            return next({
-              status: 400,
-              message: 'User does not exist',
-            })
-          }
-        }
-      )
-    })
   },
   addUser: (req, res, next) => {
     logger.info('addUser called')
