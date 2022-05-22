@@ -3,7 +3,7 @@
 [![Deploy to Heroku](https://github.com/2182556/prog4-share-a-meal-2182556/actions/workflows/main.yml/badge.svg)](https://github.com/2182556/prog4-share-a-meal-2182556/actions/workflows/main.yml)
 
 ## Description
-'Share a meal' API based on documentation from [Share-a-Meal Backend API (SWAGGER)](https://shareameal-api.herokuapp.com/docs/). It can be used to create an application where users can create an account, login, create meals, find meals and participate. It is made with the purpose of encouraging people to connect with others near them by either sharing or participating in a meal. 
+This project is an implementation of the 'Share a meal' API based on documentation from [Share-a-Meal Backend API (SWAGGER)](https://shareameal-api.herokuapp.com/docs/). It can be used to create an application where users can create an account, login, create meals, find meals and participate. It is made with the purpose of encouraging people to connect with others near them by either sharing or participating in a meal. 
 It is currently deployed at Heroku, https://share-a-meal-2182556.herokuapp.com/.
 
 ***
